@@ -9,7 +9,7 @@ class Logs:
     def __init__(self):
         self.last_message = ''
 
-    def post(self, *args):
+    def post(self, *args: str):
         try:
             post = ' '.join(args)
             dt = strftime('%y-%m-%d %H:%M:%S', localtime(time()))
@@ -21,4 +21,6 @@ class Logs:
                 f.write(self.last_message + '\n')
 
         except Exception as e:
+            print('Logs')
             print(vars(e), e.args)
+            print(e)

@@ -6,7 +6,7 @@
 # telegram: @savinkirillnick
 
 from settings import BotSettings
-from positions import Position
+from position import Position
 from logs import Logs
 
 # создаем объект настроек бота
@@ -15,3 +15,5 @@ bs = BotSettings({})
 pos = Position({})
 # создаем объект лог
 log = Logs()
+
+

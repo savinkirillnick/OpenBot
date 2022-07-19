@@ -1,7 +1,9 @@
 # Класс работы с набором позиций
 
+from item import DefaultItem
 
-class Position:
+
+class Position(DefaultItem):
 
     def __init__(self, data: dict):
         # Инициализация объекта класса
@@ -27,18 +29,6 @@ class Position:
     def __str__(self):
         # Вывод информации о классе
         return f'Класс для работы с позицией'
-
-    def get_items(self):
-        # Получение словаря из всех свойств объекта и их названий
-        data = {key: value.replace('_', ' ').capitalize() for key, value in
-                zip(vars(self).keys(), vars(self).keys())}
-        return data
-
-    def update(self, data: dict):
-        # обновление настроек позиции
-        for key in data.keys():
-            if key in vars(self).keys():
-                setattr(self, key, data[key])
 
     def reset(self):
         # обнуление / сброс позиции
