@@ -5,9 +5,20 @@ from item import DefaultItem
 
 
 class Sniper(DefaultItem):
+    """Клас работы стратегии Sniper.
 
-    def __init__(self, data: dict):
-        # Инициализация объекта класса
+    buy_price - Цена покупки, ниже которой бот будет покупать в USDT;
+    buy_lot - Объем лота к покупке в USDT;
+    sell_price - Цена покупки, выше которой бот будет покупать в USDT;
+    sell_lot - Объем лота к продаже в USDT;
+    deposit - Депозит, выделяемый на работу бота в USDT;
+    deposit_available - Депозит, определяемый ботом для торговли,
+    при первоначальных настройках задаем равный deposit, при работе
+    бота, он будет сам его корректировать.
+    """
+
+    def __init__(self):
+        """Инициализация объекта класса."""
 
         # Цена покупки, ниже которой бот будет покупать
         self.buy_price = 0.0
@@ -27,26 +38,61 @@ class Sniper(DefaultItem):
         # Размер депозита, доступного для торгов из выделенного (USDT)
         self.deposit_available = 0.0
 
-        # Обновление настроек
-        self.update(data)
+        # Загрузка настроек из файла, если он есть
+        self.load()
 
     def __str__(self):
-        # Вывод информации о классе
+        """Вывод информации о классе."""
         return f'Класс для работы со стратегией Sniper'
 
     def reset(self):
+        """обнуление / сброс данных стратегии."""
         self.deposit_available = self.deposit
 
     def buy(self, price: float, qty: float):
+        """Покупка / набор позиции в стратегии. Стратегия вычисляет размер
+        доступного депозита.
+
+        Функция на вход принимает:
+        price (float) - цена покупки;
+        qty (float) - объем покупки.
+
+        """
         self.deposit_available -= price * qty
         if self.deposit_available < 0.0:
             self.deposit_available = 0.0
 
+        self.save()
+
     def sell(self, price: float, qty: float):
+        """Продажа / закрытие позиции в стратегии. Стратегия вычисляет размер
+        доступного депозита.
+
+        Функция на вход принимает:
+        price (float) - цена продажи;
+        qty (float) - объем продажи.
+
+        """
         self.deposit_available += price * qty
         if self.deposit_available > self.deposit:
             self.reset()
 
-    def check(self, last_price: float):
+        self.save()
 
-        pass
+    def check(self, last_price: float):
+        """Проверка последней цены валюты с параметрами стратегии.
+
+        Функция на вход принимает значение последней торгуемой цены last_price.
+
+        Функция на выходе выдает кортеж из трех элементов:
+        action (str) - действие, которое следует принять (buy, sell, wait)
+        price (float) - цена покупки/продажи
+        qty (float) - объем покупки/продажи"""
+        if last_price <= self.buy_price:
+            qty = self.buy_lot / last_price
+            return 'buy', last_price, qty
+        if last_price >= self.sell_price:
+            qty = self.sell_lot / last_price
+            return 'sell', last_price, qty
+
+        return 'wait', 0.0, 0.0
