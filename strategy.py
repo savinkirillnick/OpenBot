@@ -38,6 +38,12 @@ class Sniper(DefaultItem):
         # Размер депозита, доступного для торгов из выделенного (USDT)
         self.deposit_available = 0.0
 
+        # Настройка трейлинг стопа, если False, то трейлинг отключен
+        self.trailing_stop_ = False
+
+        # Период следования трейлинг стопа в секундах
+        self.trailing_stop_period = 0.0
+
         # Загрузка настроек из файла, если он есть
         self.load()
 

@@ -12,11 +12,13 @@ from position import Position
 from logs import Logs
 from strategy import Sniper
 
-# создаем объект настроек бота
-bs = BotSettings()
-# создаем объект позиции
-pos = Position()
-# создаем объект лог
-log = Logs()
+
+if __name__ == '__main__':
+    # создаем объект настроек бота
+    bs = BotSettings()
+    # создаем объект позиции
+    pos = Position()
+    # создаем объект лог
+    log = Logs()
 
 
