@@ -31,15 +31,12 @@ class TrailingStop:
         self.kline.append(item)
 
         # Определяем индекс элемента с устаревшими данными
-        j = 0
         for i in range(len(self.kline)):
-            if self.kline[i][0] < (time() - self.stop_interval):
-                j = i
+            if self.kline[i][0] > (time() - self.stop_interval):
+                # Удаляем данные, которые находятся за пределами необходимого периода
+                # и не участвуют в расчетах, т.е. все что ранее i-го элемента
+                self.kline = self.kline[i:]
                 break
-
-        # Удаляем данные, которые находятся за пределами необходимого периода
-        # и не участвуют в расчетах, т.е. все что ранее j-го элемента
-        self.kline = self.kline[j:]
 
         # Получаем контрольную цену
         stop_price = min([item[1] for item in self.kline])
