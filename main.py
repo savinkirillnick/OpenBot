@@ -6,6 +6,7 @@ contacts: Kirill Savin
 telegram: @savinkirillnick
 
 """
+import ccxt
 
 from settings import BotSettings
 from position import Position

@@ -4,6 +4,18 @@
 
 `http://funnymay.com/products.php`
 
+### Подключение библиотеки ccxt
+
+Скачайте библиотеру по ссылке `https://github.com/ccxt/ccxt/archive/refs/heads/master.zip` со страницы `https://github.com/ccxt/ccxt`
+
+Скачанный архив `ccxt-master.zip` разархивируйте на рабочий стол.
+
+Войдите в папки `ccxt-master` > `python`
+
+Скопируйте папку `ccxt` и вставьте ее в корень папки с проектом OpenBot, там же где лежит файл `main.py`
+
+остальные файлы из папки `python` копировать не надо.
+
 #### 0.1
 * Тестовая версия программы со стратегией Sniper
 
