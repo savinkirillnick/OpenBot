@@ -52,6 +52,9 @@ class BotSettings(DefaultItem):
         # Стратегия, по которой будет работать бот
         self.strategy = 'sniper'
 
+        # Комиссия за сделку биржи, в %
+        self.fee = 0.0
+
         # Загрузка настроек из файла, если он есть
         self.load()
 

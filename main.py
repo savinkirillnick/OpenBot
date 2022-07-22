@@ -11,7 +11,7 @@ import ccxt
 from settings import BotSettings
 from position import Position
 from logs import Logs
-from strategy import Sniper
+from strategy import Strategy
 
 
 if __name__ == '__main__':

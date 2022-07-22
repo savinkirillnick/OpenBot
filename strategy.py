@@ -4,7 +4,29 @@
 from item import DefaultItem
 
 
-class Sniper(DefaultItem):
+class Strategy:
+    """Общий класс по работе со стратегиями"""
+    def __init__(self, mode):
+        try:
+            self.cur = eval('Strategy'+mode.capitalize()+'()')
+        except Exception as e:
+            print(e.args)
+            quit()
+
+    def reset(self):
+        self.cur.reset()
+
+    def buy(self, price: float, qty: float):
+        self.cur.buy(price, qty)
+
+    def sell(self, price: float, qty: float):
+        self.cur.sell(price, qty)
+
+    def check(self, last_price: float):
+        self.cur.check(last_price)
+
+
+class StrategySniper(DefaultItem):
     """Клас работы стратегии Sniper.
 
     buy_price - Цена покупки, ниже которой бот будет покупать в USDT;
@@ -15,8 +37,8 @@ class Sniper(DefaultItem):
     deposit_available - Депозит, определяемый ботом для торговли,
     при первоначальных настройках задаем равный deposit, при работе
     бота, он будет сам его корректировать.
-    """
 
+    """
     def __init__(self):
         """Инициализация объекта класса."""
 
