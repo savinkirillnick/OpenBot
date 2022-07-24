@@ -9,8 +9,10 @@ class Logs:
     в переменной last_message. Выводит лог на экран
 
     """
-    def __init__(self):
+    def __init__(self, app):
         self.last_message = ''
+        self.app = app
+        self.post('Bot opened')
 
     def post(self, *args: str):
         try:
@@ -20,6 +22,7 @@ class Logs:
             mode = 'wt' if not path.exists('logs.txt') else 'at'
             self.last_message = dt + ' ' + post
             print(self.last_message)
+            self.app.insert_logs(self.last_message)
 
             with open('logs.txt', mode) as f:
                 f.write(self.last_message + '\n')
