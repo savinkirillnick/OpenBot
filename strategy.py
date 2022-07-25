@@ -6,7 +6,7 @@ from item import DefaultItem
 
 class Strategy:
     """Общий класс по работе со стратегиями"""
-    def __init__(self, mode):
+    def __init__(self, mode: str):
         try:
             self.cur = eval('Strategy'+mode.capitalize()+'()')
         except Exception as e:
@@ -27,7 +27,7 @@ class Strategy:
 
 
 class StrategySniper(DefaultItem):
-    """Клас работы стратегии Sniper.
+    """Класс работы стратегии Sniper.
 
     buy_price - Цена покупки, ниже которой бот будет покупать в USDT;
     buy_lot - Объем лота к покупке в USDT;
@@ -124,3 +124,66 @@ class StrategySniper(DefaultItem):
             return 'sell', last_price, qty
 
         return 'wait', 0.0, 0.0
+
+    @property
+    def buy_price(self):
+        return self.buy_price
+
+    @buy_price.setter
+    def buy_price(self, new_value: float):
+        DefaultItem.check_positive_value(new_value)
+        self.buy_price = new_value
+
+    @property
+    def buy_lot(self):
+        return self.buy_lot
+
+    @buy_lot.setter
+    def buy_lot(self, new_value: float):
+        DefaultItem.check_positive_value(new_value)
+        self.buy_lot = new_value
+
+    @property
+    def sell_price(self):
+        return self.sell_price
+
+    @sell_price.setter
+    def sell_price(self, new_value: float):
+        DefaultItem.check_positive_value(new_value)
+        self.sell_price = new_value
+
+    @property
+    def sell_lot(self):
+        return self.sell_lot
+
+    @sell_lot.setter
+    def sell_lot(self, new_value: float):
+        DefaultItem.check_positive_value(new_value)
+        self.sell_lot = new_value
+
+    @property
+    def deposit(self):
+        return self.deposit
+
+    @deposit.setter
+    def deposit(self, new_value: float):
+        DefaultItem.check_positive_value(new_value)
+        self.deposit = new_value
+
+    @property
+    def deposit_available(self):
+        return self.deposit_available
+
+    @deposit_available.setter
+    def deposit_available(self, new_value: float):
+        DefaultItem.check_positive_value(new_value)
+        self.deposit_available = new_value
+
+    @property
+    def trailing_stop_period(self):
+        return self.trailing_stop_period
+
+    @trailing_stop_period.setter
+    def trailing_stop_period(self, new_value: float):
+        DefaultItem.check_positive_value(new_value)
+        self.trailing_stop_period = new_value

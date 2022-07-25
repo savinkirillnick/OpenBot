@@ -18,12 +18,13 @@ gui_menu = ['main',
 
 class MainWindow(tk.Frame):
 
-    def __init__(self, root):
+    def __init__(self, root, bot_state):
         super().__init__(root)
 
         self.__root = root
+        self.__bot_state = bot_state
         self.display_window = 'main'
-        self.logs_journal = ['Welcome to Open Bot',]
+        self.logs_journal = ['Welcome to Open Bot', ]
 
         self.width_root = 420
         self.height_root = 480
@@ -48,7 +49,7 @@ class MainWindow(tk.Frame):
 
         # Основные кнопки управления программой
         self.start_stop_button = tk.Button(self.menu_bar, command=None, compound=tk.TOP, bg='#ccddff', relief='flat',
-                                           bd=0, activebackground='#ccddff', text='Start')
+                                           bd=0, activebackground='#bbccff', text='Start')
         self.start_stop_button.pack(side=tk.LEFT, padx=5)
 
     def _init_main_window(self):

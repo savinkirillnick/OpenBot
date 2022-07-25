@@ -72,3 +72,8 @@ class DefaultItem:
                 print(self.error(get_name()))
                 print(vars(e), e.args)
                 print(e)
+
+    @staticmethod
+    def check_positive_value(value: float):
+        if value < 0.0:
+            raise Exception

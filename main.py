@@ -11,10 +11,7 @@ import tkinter as tk
 from gui import MainWindow
 import ccxt
 
-from settings import BotSettings
-from position import Position
-from logs import Logs
-from strategy import Strategy
+from state import BotState
 
 
 __version__ = 'ver. dev'
@@ -22,15 +19,11 @@ __version__ = 'ver. dev'
 
 if __name__ == '__main__':
 
-    root = tk.Tk()
-    app = MainWindow(root)
+    # Создаем объект состояния бота
+    bs = BotState()
 
-    # создаем объект настроек бота
-    bot = BotSettings()
-    # создаем объект позиции
-    pos = Position()
-    # создаем объект лог
-    log = Logs(app)
+    root = tk.Tk()
+    app = MainWindow(root, bs)
 
     # Вычисляем расширение экрана пользователя и задаем размеры окна программы
     screen_width = root.winfo_screenwidth()

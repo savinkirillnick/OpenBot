@@ -61,3 +61,53 @@ class BotSettings(DefaultItem):
     def __str__(self):
         """Вывод информации о классе."""
         return f'Класс для работы с настройками бота'
+
+    @staticmethod
+    def check_value(value: float):
+        if value < 0.0:
+            raise Exception
+
+    @property
+    def deposit(self):
+        return self.deposit
+
+    @deposit.setter
+    def deposit(self, new_value):
+        DefaultItem.check_positive_value(new_value)
+        self.deposit = new_value
+
+    @property
+    def order_life(self):
+        return self.order_life
+
+    @order_life.setter
+    def order_life(self, new_value):
+        DefaultItem.check_positive_value(new_value)
+        self.order_life = new_value
+
+    @property
+    def pause(self):
+        return self.pause
+
+    @pause.setter
+    def pause(self, new_value):
+        DefaultItem.check_positive_value(new_value)
+        self.pause = new_value
+
+    @property
+    def update_time(self):
+        return self.update_time
+
+    @update_time.setter
+    def update_time(self, new_value):
+        DefaultItem.check_positive_value(new_value)
+        self.update_time = new_value
+
+    @property
+    def fee(self):
+        return self.fee
+
+    @fee.setter
+    def fee(self, new_value):
+        DefaultItem.check_positive_value(new_value)
+        self.fee = new_value

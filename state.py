@@ -2,6 +2,11 @@
 
 from time import time
 
+from settings import BotSettings
+from position import Position
+from logs import Logs
+from strategy import Strategy
+
 
 class BotState:
     """Класс для ведения и контроля циклов работы программы.
@@ -28,6 +33,18 @@ class BotState:
         # Списки открытых ордеров и закрытых ордеров
         self.orders = list()
         self.trades = list()
+
+        # Объект настроек бота
+        self.bot = BotSettings()
+
+        # Объект набранной позиции
+        self.pos = Position()
+
+        # Объект лог
+        self.log = Logs()
+
+        # Объект стратегии
+        self.strategy = Strategy(vars(self.bot)['strategy'])
 
         # идентификатор ордера на отмену
         self.queue_id = ''
@@ -56,3 +73,11 @@ class BotState:
 
         # Корректировка времени биржи и времени машины
         self.exchange_delta_time = 0.0
+
+    @property
+    def bot_is_run(self):
+        return self.bot_is_run
+
+    @bot_is_run.setter
+    def bot_is_run(self, new_flag):
+        self.bot_is_run = new_flag
