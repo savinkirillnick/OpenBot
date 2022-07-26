@@ -43,28 +43,28 @@ class StrategySniper(DefaultItem):
         """Инициализация объекта класса."""
 
         # Цена покупки, ниже которой бот будет покупать
-        self.buy_price = 0.0
+        self._buy_price = 0.0
 
         # Размер объема лота к покупке (в котируемой валюте USDT)
-        self.buy_lot = 0.0
+        self._buy_lot = 0.0
 
         # Цена продажи, выше которой бот будет продавать
-        self.sell_price = 0.0
+        self._sell_price = 0.0
 
         # Размер объема лота к продаже (в котируемой валюте USDT)
-        self.sell_lot = 0.0
+        self._sell_lot = 0.0
 
         # Размер депозита, выделяемого на торговлю (USDT)
-        self.deposit = 0.0
+        self._deposit = 0.0
 
         # Размер депозита, доступного для торгов из выделенного (USDT)
-        self.deposit_available = 0.0
+        self._deposit_available = 0.0
 
         # Настройка трейлинг стопа, если False, то трейлинг отключен
-        self.trailing_stop_ = False
+        self.trailing_stop = False
 
         # Период следования трейлинг стопа в секундах
-        self.trailing_stop_period = 0.0
+        self._trailing_stop_period = 0.0
 
         # Загрузка настроек из файла, если он есть
         self.load()
@@ -127,63 +127,63 @@ class StrategySniper(DefaultItem):
 
     @property
     def buy_price(self):
-        return self.buy_price
+        return self._buy_price
 
     @buy_price.setter
     def buy_price(self, new_value: float):
         DefaultItem.check_positive_value(new_value)
-        self.buy_price = new_value
+        self._buy_price = new_value
 
     @property
     def buy_lot(self):
-        return self.buy_lot
+        return self._buy_lot
 
     @buy_lot.setter
     def buy_lot(self, new_value: float):
         DefaultItem.check_positive_value(new_value)
-        self.buy_lot = new_value
+        self._buy_lot = new_value
 
     @property
     def sell_price(self):
-        return self.sell_price
+        return self._sell_price
 
     @sell_price.setter
     def sell_price(self, new_value: float):
         DefaultItem.check_positive_value(new_value)
-        self.sell_price = new_value
+        self._sell_price = new_value
 
     @property
     def sell_lot(self):
-        return self.sell_lot
+        return self._sell_lot
 
     @sell_lot.setter
     def sell_lot(self, new_value: float):
         DefaultItem.check_positive_value(new_value)
-        self.sell_lot = new_value
+        self._sell_lot = new_value
 
     @property
     def deposit(self):
-        return self.deposit
+        return self._deposit
 
     @deposit.setter
     def deposit(self, new_value: float):
         DefaultItem.check_positive_value(new_value)
-        self.deposit = new_value
+        self._deposit = new_value
 
     @property
     def deposit_available(self):
-        return self.deposit_available
+        return self._deposit_available
 
     @deposit_available.setter
     def deposit_available(self, new_value: float):
         DefaultItem.check_positive_value(new_value)
-        self.deposit_available = new_value
+        self._deposit_available = new_value
 
     @property
     def trailing_stop_period(self):
-        return self.trailing_stop_period
+        return self._trailing_stop_period
 
     @trailing_stop_period.setter
     def trailing_stop_period(self, new_value: float):
         DefaultItem.check_positive_value(new_value)
-        self.trailing_stop_period = new_value
+        self._trailing_stop_period = new_value

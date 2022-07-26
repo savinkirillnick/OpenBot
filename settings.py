@@ -29,31 +29,31 @@ class BotSettings(DefaultItem):
         self.api_secret = ''
 
         # API-ключ дополнительный
-        self.api_password = ''
+        self.api_optional = ''
 
         # Биржа
-        self.exchange = ''
+        self.exchange = 'binance'
 
         # Торгуемая пара
-        self.pair = ''
+        self.pair = 'btc_usdt'
 
         # Депозит, выделяемый на торговлю, USDT
-        self.deposit = 0.0
+        self._deposit = 0.0
 
         # Время жизни ордера до отмены, сек
-        self.order_life = 0.0
+        self._order_life = 0.0
 
         # Время паузы между отправки ордеров, сек
-        self.pause = 0.0
+        self._pause = 0.0
 
         # Время обновления запроса на биржу, сек
-        self.update_time = 1.0
+        self._update_time = 1.0
 
         # Стратегия, по которой будет работать бот
         self.strategy = 'sniper'
 
         # Комиссия за сделку биржи, в %
-        self.fee = 0.0
+        self._fee = 0.0
 
         # Загрузка настроек из файла, если он есть
         self.load()
@@ -69,45 +69,45 @@ class BotSettings(DefaultItem):
 
     @property
     def deposit(self):
-        return self.deposit
+        return self._deposit
 
     @deposit.setter
     def deposit(self, new_value):
         DefaultItem.check_positive_value(new_value)
-        self.deposit = new_value
+        self._deposit = new_value
 
     @property
     def order_life(self):
-        return self.order_life
+        return self._order_life
 
     @order_life.setter
     def order_life(self, new_value):
         DefaultItem.check_positive_value(new_value)
-        self.order_life = new_value
+        self._order_life = new_value
 
     @property
     def pause(self):
-        return self.pause
+        return self._pause
 
     @pause.setter
     def pause(self, new_value):
         DefaultItem.check_positive_value(new_value)
-        self.pause = new_value
+        self._pause = new_value
 
     @property
     def update_time(self):
-        return self.update_time
+        return self._update_time
 
     @update_time.setter
     def update_time(self, new_value):
         DefaultItem.check_positive_value(new_value)
-        self.update_time = new_value
+        self._update_time = new_value
 
     @property
     def fee(self):
-        return self.fee
+        return self._fee
 
     @fee.setter
     def fee(self, new_value):
         DefaultItem.check_positive_value(new_value)
-        self.fee = new_value
+        self._fee = new_value

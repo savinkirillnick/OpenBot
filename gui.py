@@ -1,11 +1,10 @@
 # Класс графического интерфейса
 
 import tkinter as tk
+from tkinter import ttk
 
 
 # Список разделов программы
-from time import sleep
-
 gui_menu = ['main',
             'depth',
             'orders',
@@ -21,10 +20,9 @@ class MainWindow(tk.Frame):
     def __init__(self, root, bot_state):
         super().__init__(root)
 
-        self.__root = root
-        self.__bot_state = bot_state
+        self._root = root
+        self._bot_state = bot_state
         self.display_window = 'main'
-        self.logs_journal = ['Welcome to Open Bot', ]
 
         self.width_root = 420
         self.height_root = 480
@@ -76,16 +74,67 @@ class MainWindow(tk.Frame):
 
     def _show_logs(self, message=''):
         self.logs_box.configure(state='normal')
-        self.logs_box.insert(tk.END, '\n'.join(self.logs_journal)+'\n' if not message else message+'\n')
+        self.logs_box.insert(tk.END, '\n'.join(self._bot_state.log.logs_journal)+'\n' if not message else message+'\n')
         self.logs_box.configure(state='disable')
         self.logs_box.yview_moveto(1)
 
     def insert_logs(self, message):
-        self.logs_journal.append(message)
+        self._bot_state.log.post(message)
         self._show_logs(message)
 
     def _init_depth_window(self):
-        pass
+
+        self.display_window = 'depth'
+        self.tool_bar.forget()
+
+        self.tool_bar = tk.Frame(bg='#ffffff', bd=0, width=self.width_root, height=self.height_root-20)
+        self.tool_bar.pack(side=tk.TOP, fill=tk.BOTH)
+
+        tk.Label(self.tool_bar, text='Bid', bg='#ffffff', font='Arial 10 bold').place(x=10, y=10)
+        tk.Label(self.tool_bar, text='Ask', bg='#ffffff', font='Arial 10 bold').place(x=210, y=10)
+
+        self.tree = ttk.Treeview(self)
+        self.tree['columns'] = ('bid_price', 'bid_qty', 'bid_sum', 'ask_price', 'ask_qty', 'ask_sum',)
+        self.tree.column('#0', width=0, minwidth=0, stretch=tk.NO)
+        self.tree.column('bid_price', width=70, minwidth=70, stretch=tk.NO)
+        self.tree.column('bid_qty', width=70, minwidth=70, stretch=tk.NO)
+        self.tree.column('bid_sum', width=70, minwidth=70, stretch=tk.NO)
+        self.tree.column('ask_price', width=70, minwidth=70, stretch=tk.NO)
+        self.tree.column('ask_qty', width=70, minwidth=70, stretch=tk.NO)
+        self.tree.column('ask_sum', width=70, minwidth=70, stretch=tk.NO)
+
+        self.tree.heading('bid_price', text='Price', anchor=tk.W)
+        self.tree.heading('bid_qty', text='Qty', anchor=tk.W)
+        self.tree.heading('bid_sum', text='Sum', anchor=tk.W)
+        self.tree.heading('ask_price', text='Price', anchor=tk.W)
+        self.tree.heading('ask_qty', text='Qty', anchor=tk.W)
+        self.tree.heading('ask_sum', text='Sum', anchor=tk.W)
+
+        around_price = self._bot_state.rules[self._bot_state.bot.pair]['around_price']
+        around_qty = self._bot_state.rules[self._bot_state.bot.pair]['around_qty']
+
+        for i in range(max(len(self._bot_state.depth['bids']), len(self._bot_state.depth['asks']))):
+            if len(self._bot_state.depth['bids']) > i and len(self._bot_state.depth['asks']) > i:
+                self.tree.insert('', 'end', 'depth_' + str(i), values=(
+                    0.0 if not self._bot_state.depth['bids'][i][0]
+                    else f"{self._bot_state.depth['bids'][i][0]}:.{around_price}f",
+                    0.0 if not self._bot_state.depth['bids'][i][1]
+                    else f"{self._bot_state.depth['bids'][i][1]}:.{around_qty}f",
+                    0.0 if not self._bot_state.depth['bids'][i][0]
+                    else f"{(self._bot_state.depth['bids'][i][0] * self._bot_state.depth['bids'][i][1])} \
+                    :.{around_price}f",
+                    0.0 if not self._bot_state.depth['asks'][i][0]
+                    else f"{self._bot_state.depth['asks'][i][0]}:.{around_price}f",
+                    0.0 if not self._bot_state.depth['asks'][i][1]
+                    else f"{self._bot_state.depth['asks'][i][1]}:.{around_qty}f",
+                    0.0 if not self._bot_state.depth['asks'][i][0]
+                    else f"{(self._bot_state.depth['asks'][i][0] * self._bot_state.depth['asks'][i][1])} \
+                    :.{around_price}f",
+                ))
+            else:
+                self.tree.insert('', 'end', 'depth_' + str(i), values=(0.0, 0.0, 0.0, 0.0, 0.0, 0.0))
+
+        self.tree.pack(fill=tk.X)
 
     def _init_orders_window(self):
         pass

@@ -22,6 +22,29 @@ if __name__ == '__main__':
     # Создаем объект состояния бота
     bs = BotState()
 
+    # Создаем объект API, в зависимости, какая биржа у нас подключена
+    try:
+        # Получаем список наобходимых данных
+        required = eval(f'ccxt.{bs.bot.exchange}.requiredCredentials')
+        # Удаляем все False
+        for item in required:
+            if required[item] is False:
+                del required[item]
+                
+        # Удаляем apiKey и secret, оставляем доплднительные параметры
+        del required['apiKey']
+        del required['secret']
+
+        # Формируем словарь аргументов
+        args = {'apiKey': bs.bot.api_key, 'secret': bs.bot.api_secret}
+        args.update({key: bs.bot.api_optional for key in required})
+
+        # запускаем инициализацию api
+        api = eval(f'ccxt.{bs.bot.exchange}({args})')
+    except Exception as e:
+        print(e.args)
+        quit()
+
     root = tk.Tk()
     app = MainWindow(root, bs)
 

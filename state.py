@@ -73,11 +73,3 @@ class BotState:
 
         # Корректировка времени биржи и времени машины
         self.exchange_delta_time = 0.0
-
-    @property
-    def bot_is_run(self):
-        return self.bot_is_run
-
-    @bot_is_run.setter
-    def bot_is_run(self, new_flag):
-        self.bot_is_run = new_flag
