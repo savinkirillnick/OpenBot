@@ -9,7 +9,7 @@ telegram: @savinkirillnick
 
 import tkinter as tk
 from gui import MainWindow
-import ccxt
+from threading import Thread
 
 from state import BotState
 
@@ -23,6 +23,7 @@ if __name__ == '__main__':
     bs = BotState()
 
     # Создаем объект API, в зависимости, какая биржа у нас подключена
+    api = None
     try:
         # Получаем список наобходимых данных
         required = eval(f'ccxt.{bs.bot.exchange}.requiredCredentials')
@@ -30,8 +31,8 @@ if __name__ == '__main__':
         for item in required:
             if required[item] is False:
                 del required[item]
-                
-        # Удаляем apiKey и secret, оставляем доплднительные параметры
+
+        # Удаляем apiKey и secret, оставляем дополнительные параметры
         del required['apiKey']
         del required['secret']
 
@@ -44,6 +45,15 @@ if __name__ == '__main__':
     except Exception as e:
         print(e.args)
         quit()
+
+    if api is not None:
+        bs.api = api
+        bs.init_api()
+
+    Thread(target=bs.update_prices, daemon=True).start()
+    Thread(target=bs.update_strategies, daemon=True).start()
+    Thread(target=bs.check_order, daemon=True).start()
+    Thread(target=bs.update_activity, daemon=True).start()
 
     root = tk.Tk()
     app = MainWindow(root, bs)
