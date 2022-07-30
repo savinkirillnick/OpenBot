@@ -72,6 +72,8 @@ class DefaultItem:
                 print(self.error(get_name()))
                 print(vars(e), e.args)
                 print(e)
+        else:
+            self.save()
 
     @staticmethod
     def check_positive_value(value: float):

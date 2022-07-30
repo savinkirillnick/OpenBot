@@ -10,7 +10,7 @@ telegram: @savinkirillnick
 import tkinter as tk
 from gui import MainWindow
 from threading import Thread
-
+import ccxt
 from state import BotState
 
 
@@ -27,10 +27,6 @@ if __name__ == '__main__':
     try:
         # Получаем список наобходимых данных
         required = eval(f'ccxt.{bs.bot.exchange}.requiredCredentials')
-        # Удаляем все False
-        for item in required:
-            if required[item] is False:
-                del required[item]
 
         # Удаляем apiKey и secret, оставляем дополнительные параметры
         del required['apiKey']

@@ -116,7 +116,7 @@ class StrategySniper(DefaultItem):
         action (str) - действие, которое следует принять (buy, sell, wait)
         price (float) - цена покупки/продажи
         qty (float) - объем покупки/продажи"""
-        if last_price <= self.buy_price:
+        if 0 < last_price <= self.buy_price:
             qty = self.buy_lot / last_price
             return 'buy', last_price, qty
         if last_price >= self.sell_price:

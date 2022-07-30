@@ -81,21 +81,21 @@ class BotState:
     def init_api(self):
 
         # Правила биржи
-        self.rules = self.api.load_markets()
+        rules_raw = self.api.load_markets()
 
         # Монеты и пары биржи
         self.coins = set()
         self.pairs = set()
 
         # для каждого символа выбираем торговые правила
-        for symbol in self.rules:
+        for symbol in rules_raw:
 
-            if 'type' in self.rules[symbol] and self.rules[symbol]['type'] != 'spot':
+            if 'type' in rules_raw[symbol] and rules_raw[symbol]['type'] != 'spot':
                 # Если пара не спотовая, пропускаем
                 break
 
-            base_asset = self.rules[symbol]['base'].lower()
-            quote_asset = self.rules[symbol]['quote'].lower()
+            base_asset = rules_raw[symbol]['base'].lower()
+            quote_asset = rules_raw[symbol]['quote'].lower()
             pair = base_asset + '_' + quote_asset
 
             # пополняем массивы данными о монетах и парах
@@ -107,49 +107,49 @@ class BotState:
             self.rules[pair] = {}
             self.rules[pair]['symbol'] = symbol
             # минимальная цена сделки
-            self.rules[pair]['min_price'] = float(self.rules[symbol]['limits']['price']['min']) if \
-                isinstance(self.rules[symbol]['limits']['price']['min'], (int, float)) and \
-                'limits' in self.rules[symbol] and 'price' in self.rules[symbol]['limits'] and \
-                'min' in self.rules[symbol]['limits']['price'] else 0.0
+            self.rules[pair]['min_price'] = float(rules_raw[symbol]['limits']['price']['min']) if \
+                isinstance(rules_raw[symbol]['limits']['price']['min'], (int, float)) and \
+                'limits' in rules_raw[symbol] and 'price' in rules_raw[symbol]['limits'] and \
+                'min' in rules_raw[symbol]['limits']['price'] else 0.0
             # максимальная цена сделки
-            self.rules[pair]['max_price'] = float(self.rules[symbol]['limits']['price']['max']) if \
-                isinstance(self.rules[symbol]['limits']['price']['max'], (int, float)) and \
-                'limits' in self.rules[symbol] and 'price' in self.rules[symbol]['limits'] and \
-                'max' in self.rules[symbol]['limits']['price'] else 0.0
+            self.rules[pair]['max_price'] = float(rules_raw[symbol]['limits']['price']['max']) if \
+                isinstance(rules_raw[symbol]['limits']['price']['max'], (int, float)) and \
+                'limits' in rules_raw[symbol] and 'price' in rules_raw[symbol]['limits'] and \
+                'max' in rules_raw[symbol]['limits']['price'] else 0.0
             # минимальный объем сделки
-            self.rules[pair]['min_qty'] = float(self.rules[symbol]['limits']['amount']['min']) if \
-                isinstance(self.rules[symbol]['limits']['amount']['min'], (int, float)) and \
-                'limits' in self.rules[symbol] and 'amount' in self.rules[symbol]['limits'] and \
-                'min' in self.rules[symbol]['limits']['amount'] else 0.0
+            self.rules[pair]['min_qty'] = float(rules_raw[symbol]['limits']['amount']['min']) if \
+                isinstance(rules_raw[symbol]['limits']['amount']['min'], (int, float)) and \
+                'limits' in rules_raw[symbol] and 'amount' in rules_raw[symbol]['limits'] and \
+                'min' in rules_raw[symbol]['limits']['amount'] else 0.0
             # максимальный объем сделки
-            self.rules[pair]['max_qty'] = float(self.rules[symbol]['limits']['amount']['max']) if \
-                isinstance(self.rules[symbol]['limits']['amount']['max'], (int, float)) and \
-                'limits' in self.rules[symbol] and 'amount' in self.rules[symbol]['limits'] and \
-                'max' in self.rules[symbol]['limits']['amount'] else 0.0
+            self.rules[pair]['max_qty'] = float(rules_raw[symbol]['limits']['amount']['max']) if \
+                isinstance(rules_raw[symbol]['limits']['amount']['max'], (int, float)) and \
+                'limits' in rules_raw[symbol] and 'amount' in rules_raw[symbol]['limits'] and \
+                'max' in rules_raw[symbol]['limits']['amount'] else 0.0
             # минимальная сумма сделки
-            self.rules[pair]['min_cost'] = float(self.rules[symbol]['limits']['cost']['min']) if \
-                isinstance(self.rules[symbol]['limits']['cost']['min'], (int, float)) and \
-                'limits' in self.rules[symbol] and 'cost' in self.rules[symbol]['limits'] and \
-                'min' in self.rules[symbol]['limits']['cost'] else 0.0
+            self.rules[pair]['min_cost'] = float(rules_raw[symbol]['limits']['cost']['min']) if \
+                isinstance(rules_raw[symbol]['limits']['cost']['min'], (int, float)) and \
+                'limits' in rules_raw[symbol] and 'cost' in rules_raw[symbol]['limits'] and \
+                'min' in rules_raw[symbol]['limits']['cost'] else 0.0
             # максимальная сумма сделки
-            self.rules[pair]['max_cost'] = float(self.rules[symbol]['limits']['cost']['max']) if \
-                isinstance(self.rules[symbol]['limits']['cost']['max'], (int, float)) and \
-                'limits' in self.rules[symbol] and 'cost' in self.rules[symbol]['limits'] and \
-                'max' in self.rules[symbol]['limits']['cost'] else 0.0
+            self.rules[pair]['max_cost'] = float(rules_raw[symbol]['limits']['cost']['max']) if \
+                isinstance(rules_raw[symbol]['limits']['cost']['max'], (int, float)) and \
+                'limits' in rules_raw[symbol] and 'cost' in rules_raw[symbol]['limits'] and \
+                'max' in rules_raw[symbol]['limits']['cost'] else 0.0
             # округление цены сделки
-            self.rules[pair]['around_price'] = int(self.rules[symbol]['precision']['price']) if \
-                isinstance(self.rules[symbol]['precision']['price'], int) and \
-                'precision' in self.rules[symbol] and 'price' in self.rules[symbol]['precision'] else \
-                int(abs(log10(float(self.rules[symbol]['precision']['price'])))) if \
-                    isinstance(self.rules[symbol]['precision']['price'], float) and \
-                    'precision' in self.rules[symbol] and 'price' in self.rules[symbol]['precision'] else 8
+            self.rules[pair]['around_price'] = int(rules_raw[symbol]['precision']['price']) if \
+                isinstance(rules_raw[symbol]['precision']['price'], int) and \
+                'precision' in rules_raw[symbol] and 'price' in rules_raw[symbol]['precision'] else \
+                int(abs(log10(float(rules_raw[symbol]['precision']['price'])))) if \
+                    isinstance(rules_raw[symbol]['precision']['price'], float) and \
+                    'precision' in rules_raw[symbol] and 'price' in rules_raw[symbol]['precision'] else 8
             # округление объема сделки
-            self.rules[pair]['around_qty'] = int(self.rules[symbol]['precision']['amount']) if \
-                isinstance(self.rules[symbol]['precision']['amount'], int) and \
-                'precision' in self.rules[symbol] and 'amount' in self.rules[symbol]['precision'] else \
-                int(abs(log10(float(self.rules[symbol]['precision']['amount'])))) if \
-                    isinstance(self.rules[symbol]['precision']['amount'], float) and \
-                    'precision' in self.rules[symbol] and 'amount' in self.rules[symbol]['precision'] else 8
+            self.rules[pair]['around_qty'] = int(rules_raw[symbol]['precision']['amount']) if \
+                isinstance(rules_raw[symbol]['precision']['amount'], int) and \
+                'precision' in rules_raw[symbol] and 'amount' in rules_raw[symbol]['precision'] else \
+                int(abs(log10(float(rules_raw[symbol]['precision']['amount'])))) if \
+                    isinstance(rules_raw[symbol]['precision']['amount'], float) and \
+                    'precision' in rules_raw[symbol] and 'amount' in rules_raw[symbol]['precision'] else 8
 
     @property
     def check_time(self):

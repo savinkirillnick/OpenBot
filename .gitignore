@@ -3,3 +3,6 @@
 __pycache__
 ccxt
 logs.txt
+Position.txt
+BotSettings.txt
+StrategySniper.txt
