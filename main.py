@@ -46,15 +46,19 @@ if __name__ == '__main__':
         print(e.args)
         quit()
 
+    # Если апи инициализировалось, то анациализируем настройки биржи
     if api is not None:
         bs.api = api
         bs.init_api()
 
+    # Запускаем потоки и садим функции обновления информации на каждый поток
     Thread(target=bs.update_prices, daemon=True).start()
     Thread(target=bs.update_strategies, daemon=True).start()
-    Thread(target=bs.check_order, daemon=True).start()
+    Thread(target=bs.update_order, daemon=True).start()
+    Thread(target=bs.update_depth, daemon=True).start()
     Thread(target=bs.update_activity, daemon=True).start()
 
+    # Создаем корневой объект ткинтер
     root = tk.Tk()
     app = MainWindow(root, bs)
 
