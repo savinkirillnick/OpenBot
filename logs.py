@@ -33,7 +33,7 @@ class Logs:
 
     @property
     def last_message(self):
-        return self.logs_journal[-1]
+        return len(self.logs_journal), self.logs_journal[-1]
 
     @last_message.setter
     def last_message(self, _):

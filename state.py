@@ -62,16 +62,9 @@ class BotState:
         # Последняя цена
         self.last_price = 0.0
 
-        # Разрешение на покупки и продажу
-        self.buy_access = False
-        self.sell_access = False
-
-        # время последнего отправленного ордера
-        self.last_trade_time = time()
-
-        # Начальное время покупки и продажи
-        self.start_buy_time = 0.0
-        self.start_sell_time = 0.0
+        # Время покупки и продажи
+        self.last_buy_time = 0.0
+        self.last_sell_time = 0.0
 
         # цены и объемы последних покупки и продажы
         self.buy_price = 0.0
@@ -223,6 +216,38 @@ class BotState:
     def ff(d: float, n: int):
         return ('{:.%df}' % n).format(d)
 
+    def check_trade_rules(self, price: float, qty: float):
+        # Проверяем соответсвие ордера правилам биржи
+        try:
+            # Проверяем, существует ли правило, и не нарушиют ли параметры сделки данные правила
+            if price < self.rules[self.bot.pair]['min_price']:
+                self.log.post(self.bot.pair + ' error: Price < Min')
+                return False
+            if qty < self.rules[self.bot.pair]['min_qty']:
+                self.log.post(self.bot.pair + ' error: Qty < Min')
+                return False
+            if qty * price < self.rules[self.bot.pair]['min_sum']:
+                self.log.post(self.bot.pair + ' error: Cost < Min')
+                return False
+            if 0 < self.rules[self.bot.pair]['max_price'] < price:
+                self.log.post(self.bot.pair + ' error: Price > Max')
+                return False
+            if 0 < self.rules[self.bot.pair]['max_qty'] < qty:
+                self.log.post(self.bot.pair + ' error: Qty > Max')
+                return False
+            if 0 < self.rules[self.bot.pair]['max_sum'] < qty * price:
+                self.log.post(self.bot.pair + ' error: Cost > Max')
+                return False
+        except Exception as e:
+            print('Check rules error')
+            print(vars(e), e.args)
+            print(e)
+            self.log.post('Check rules error')
+            return False
+
+        # Если нарушений правил нет, выводим True
+        return True
+
     def prep_price(self, pair: str, price: float):
         around_price = self.rules[pair]['around_price']
         return self.ff(price, around_price)
@@ -234,6 +259,20 @@ class BotState:
             while round_qty > qty:
                 round_qty -= 0.1 ** around_qty
         return self.ff(round_qty, around_qty)
+
+    def buy(self, price: float, qty: float):
+        self.buy_price = price
+        self.buy_qty = qty
+        self.last_buy_time = time()
+        self.strategy.buy(price, qty)
+        self.position.buy(price, qty)
+
+    def sell(self, price: float, qty: float):
+        self.sell_price = price
+        self.sell_qty = qty
+        self.last_sell_time = time()
+        self.strategy.sell(price, qty)
+        self.position.sell(price, qty)
 
     def update_depth(self):
 
@@ -283,10 +322,12 @@ class BotState:
 
             # Если пришло действие покупать или продавать, то отправляем соответствующий ордер
             try:
-                if action == 'buy':
+                if action == 'buy' and self.last_buy_time + self.bot.pause < time() and \
+                        self.check_trade_rules(price, qty):
                     order = self.api.create_limit_buy_order(self.rules[pair]['symbol'], self.prep_qty(pair, qty),
                                                             self.prep_price(pair, price))
-                elif action == 'sell':
+                elif action == 'sell' and self.last_sell_time + self.bot.pause < time() and \
+                        self.check_trade_rules(price, qty):
                     order = self.api.create_limit_sell_order(self.rules[pair]['symbol'], self.prep_qty(pair, qty),
                                                              self.prep_price(pair, price))
             except Exception as e:
@@ -296,11 +337,9 @@ class BotState:
             # Если ордер отправился и мы получили ответ обновляем данные в стратегии и позиции
             if action != 'wait' and order:
                 if action == 'buy':
-                    self.strategy.buy(price, qty)
-                    self.position.buy(price, qty)
+                    self.buy(price, qty)
                 elif action == 'sell':
-                    self.strategy.sell(price, qty)
-                    self.position.sell(price, qty)
+                    self.sell(price, qty)
 
     def update_order(self):
         while True:
