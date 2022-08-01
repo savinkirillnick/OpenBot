@@ -34,6 +34,8 @@ class BotState:
 
         # Стакан
         self.depth = dict()
+        self.depth['bids'] = list()
+        self.depth['asks'] = list()
 
         # Балансы по монетам
         self.balances = dict()
@@ -202,9 +204,9 @@ class BotState:
 
                 # Обнуляем время той стороны, которой отменили ордер
                 if self.queue_side.lower() == 'buy':
-                    self.start_buy_time = time()
+                    self.last_buy_time = 0.0
                 elif self.queue_side.lower() == 'sell':
-                    self.start_sell_time = time()
+                    self.last_sell_time = 0.0
                 self.queue_side = ''
 
                 for i in range(len(self.orders)):
@@ -249,10 +251,12 @@ class BotState:
         return True
 
     def prep_price(self, pair: str, price: float):
+        # форматируем цену
         around_price = self.rules[pair]['around_price']
         return self.ff(price, around_price)
 
     def prep_qty(self, pair: str, qty: float):
+        # форматируем объем
         around_qty = self.rules[pair]['around_qty']
         round_qty = float(self.ff(qty, around_qty))
         if round_qty > qty:
@@ -261,6 +265,7 @@ class BotState:
         return self.ff(round_qty, around_qty)
 
     def buy(self, price: float, qty: float):
+        # обработка покупки
         self.buy_price = price
         self.buy_qty = qty
         self.last_buy_time = time()
@@ -268,6 +273,7 @@ class BotState:
         self.position.buy(price, qty)
 
     def sell(self, price: float, qty: float):
+        # обработка продажи
         self.sell_price = price
         self.sell_qty = qty
         self.last_sell_time = time()
@@ -301,10 +307,8 @@ class BotState:
                 self.log.post('** Ошибка:\n' + traceback.format_exc())
 
             try:
-                if isinstance(raw_data, dict):
-                    for symbol in raw_data:
-                        self.last_price = raw_data[symbol]['close'] if isinstance(raw_data[symbol], dict) and \
-                                                                       'close' in raw_data[symbol] else 0.0
+                if isinstance(raw_data, dict) and self.rules[self.bot.pair]['symbol'] in raw_data:
+                    self.last_price = raw_data[self.rules[self.bot.pair]['symbol']]['close']
             except Exception as e:
                 self.log.post('* Raw data error. ' + str(type(e).__name__) + ': ' + str(e))
                 self.log.post('** Ошибка:\n' + traceback.format_exc())
@@ -315,7 +319,10 @@ class BotState:
             sleep(self.bot.update_time)
 
             # Получаем действие, цену и объем при проверке стратегии
-            action, price, qty = self.strategy.check(self.last_price)
+            if self.last_price:
+                action, price, qty = self.strategy.check(self.last_price)
+            else:
+                action, price, qty = ('wait', 0.0, 0.0)
 
             pair = self.bot.pair
             order = dict()

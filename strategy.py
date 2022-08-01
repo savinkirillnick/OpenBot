@@ -23,7 +23,7 @@ class Strategy:
         self.cur.sell(price, qty)
 
     def check(self, last_price: float):
-        self.cur.check(last_price)
+        return self.cur.check(last_price)
 
 
 class StrategySniper(DefaultItem):
@@ -119,7 +119,7 @@ class StrategySniper(DefaultItem):
         if 0 < last_price <= self.buy_price:
             qty = self.buy_lot / last_price
             return 'buy', last_price, qty
-        if last_price >= self.sell_price:
+        if 0 < self.sell_price <= last_price:
             qty = self.sell_lot / last_price
             return 'sell', last_price, qty
 

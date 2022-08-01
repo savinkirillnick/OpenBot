@@ -1,6 +1,7 @@
 # Класс графического интерфейса
 
 import tkinter as tk
+from time import sleep
 from tkinter import ttk
 
 
@@ -90,10 +91,10 @@ class MainWindow(tk.Frame):
         self.tool_bar = tk.Frame(bg='#ffffff', bd=0, width=self.width_root, height=self.height_root-20)
         self.tool_bar.pack(side=tk.TOP, fill=tk.BOTH)
 
-        tk.Label(self.tool_bar, text='Bid', bg='#ffffff', font='Arial 10 bold').place(x=10, y=10)
-        tk.Label(self.tool_bar, text='Ask', bg='#ffffff', font='Arial 10 bold').place(x=210, y=10)
+        tk.Label(self.tool_bar, text='Bid', bg='#ffffff', font='Arial 10 bold').place(x=10, y=5)
+        tk.Label(self.tool_bar, text='Ask', bg='#ffffff', font='Arial 10 bold').place(x=210, y=5)
 
-        self.tree = ttk.Treeview(self)
+        self.tree = ttk.Treeview(self.tool_bar)
         self.tree['columns'] = ('bid_price', 'bid_qty', 'bid_sum', 'ask_price', 'ask_qty', 'ask_sum',)
         self.tree.column('#0', width=0, minwidth=0, stretch=tk.NO)
         self.tree.column('bid_price', width=70, minwidth=70, stretch=tk.NO)
@@ -110,31 +111,41 @@ class MainWindow(tk.Frame):
         self.tree.heading('ask_qty', text='Qty', anchor=tk.W)
         self.tree.heading('ask_sum', text='Sum', anchor=tk.W)
 
+        self.tree.place(x=0, y=30, width=self.width_root, height=self.height_root-35)
+
+        self.view_tree()
+
+    def view_tree(self):
+        for i in self.tree.get_children():
+            self.tree.delete(i)
+
         around_price = self._bot_state.rules[self._bot_state.bot.pair]['around_price']
         around_qty = self._bot_state.rules[self._bot_state.bot.pair]['around_qty']
 
-        for i in range(max(len(self._bot_state.depth['bids']), len(self._bot_state.depth['asks']))):
+        for i in range(min(len(self._bot_state.depth['bids']), len(self._bot_state.depth['asks']), 20)):
+
             if len(self._bot_state.depth['bids']) > i and len(self._bot_state.depth['asks']) > i:
+
                 self.tree.insert('', 'end', 'depth_' + str(i), values=(
                     0.0 if not self._bot_state.depth['bids'][i][0]
-                    else f"{self._bot_state.depth['bids'][i][0]}:.{around_price}f",
+                    else ('{:.' + str(around_price) + 'f}').format(self._bot_state.depth['bids'][i][0]),
                     0.0 if not self._bot_state.depth['bids'][i][1]
-                    else f"{self._bot_state.depth['bids'][i][1]}:.{around_qty}f",
+                    else ('{:.' + str(around_qty) + 'f}').format(self._bot_state.depth['bids'][i][1]),
                     0.0 if not self._bot_state.depth['bids'][i][0]
-                    else f"{(self._bot_state.depth['bids'][i][0] * self._bot_state.depth['bids'][i][1])} \
-                    :.{around_price}f",
+                    else ('{:.' + str(around_price) + 'f}').format(self._bot_state.depth['bids'][i][0] *
+                                                                   self._bot_state.depth['bids'][i][1]),
                     0.0 if not self._bot_state.depth['asks'][i][0]
-                    else f"{self._bot_state.depth['asks'][i][0]}:.{around_price}f",
+                    else ('{:.' + str(around_price) + 'f}').format(self._bot_state.depth['asks'][i][0]),
                     0.0 if not self._bot_state.depth['asks'][i][1]
-                    else f"{self._bot_state.depth['asks'][i][1]}:.{around_qty}f",
+                    else ('{:.' + str(around_qty) + 'f}').format(self._bot_state.depth['asks'][i][1]),
                     0.0 if not self._bot_state.depth['asks'][i][0]
-                    else f"{(self._bot_state.depth['asks'][i][0] * self._bot_state.depth['asks'][i][1])} \
-                    :.{around_price}f",
+                    else ('{:.' + str(around_price) + 'f}').format(self._bot_state.depth['asks'][i][0] *
+                                                                   self._bot_state.depth['asks'][i][1]),
                 ))
             else:
                 self.tree.insert('', 'end', 'depth_' + str(i), values=(0.0, 0.0, 0.0, 0.0, 0.0, 0.0))
 
-        self.tree.pack(fill=tk.X)
+        self.after(int(self._bot_state.bot.update_time * 1000), self.view_tree)
 
     def _init_orders_window(self):
         pass
