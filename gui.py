@@ -1,7 +1,7 @@
 # Класс графического интерфейса
 
 import tkinter as tk
-from time import sleep
+from time import strftime, localtime
 from tkinter import ttk
 
 
@@ -91,67 +91,143 @@ class MainWindow(tk.Frame):
         self.tool_bar = tk.Frame(bg='#ffffff', bd=0, width=self.width_root, height=self.height_root-20)
         self.tool_bar.pack(side=tk.TOP, fill=tk.BOTH)
 
-        tk.Label(self.tool_bar, text='Bid', bg='#ffffff', font='Arial 10 bold').place(x=10, y=5)
-        tk.Label(self.tool_bar, text='Ask', bg='#ffffff', font='Arial 10 bold').place(x=210, y=5)
+        tk.Label(self.tool_bar, text='BIDS', bg='#ffffff', font='Arial 10 bold').place(x=10, y=5)
+        tk.Label(self.tool_bar, text='ASKS', bg='#ffffff', font='Arial 10 bold').place(x=210, y=5)
 
-        self.tree = ttk.Treeview(self.tool_bar)
-        self.tree['columns'] = ('bid_price', 'bid_qty', 'bid_sum', 'ask_price', 'ask_qty', 'ask_sum',)
-        self.tree.column('#0', width=0, minwidth=0, stretch=tk.NO)
-        self.tree.column('bid_price', width=70, minwidth=70, stretch=tk.NO)
-        self.tree.column('bid_qty', width=70, minwidth=70, stretch=tk.NO)
-        self.tree.column('bid_sum', width=70, minwidth=70, stretch=tk.NO)
-        self.tree.column('ask_price', width=70, minwidth=70, stretch=tk.NO)
-        self.tree.column('ask_qty', width=70, minwidth=70, stretch=tk.NO)
-        self.tree.column('ask_sum', width=70, minwidth=70, stretch=tk.NO)
+        self.tree_depth = ttk.Treeview(self.tool_bar)
+        self.tree_depth['columns'] = ('bid_price', 'bid_qty', 'bid_sum', 'ask_price', 'ask_qty', 'ask_sum',)
+        self.tree_depth.column('#0', width=0, minwidth=0, stretch=tk.NO)
+        self.tree_depth.column('bid_price', width=70, minwidth=70, stretch=tk.NO)
+        self.tree_depth.column('bid_qty', width=70, minwidth=70, stretch=tk.NO)
+        self.tree_depth.column('bid_sum', width=70, minwidth=70, stretch=tk.NO)
+        self.tree_depth.column('ask_price', width=70, minwidth=70, stretch=tk.NO)
+        self.tree_depth.column('ask_qty', width=70, minwidth=70, stretch=tk.NO)
+        self.tree_depth.column('ask_sum', width=70, minwidth=70, stretch=tk.NO)
 
-        self.tree.heading('bid_price', text='Price', anchor=tk.W)
-        self.tree.heading('bid_qty', text='Qty', anchor=tk.W)
-        self.tree.heading('bid_sum', text='Sum', anchor=tk.W)
-        self.tree.heading('ask_price', text='Price', anchor=tk.W)
-        self.tree.heading('ask_qty', text='Qty', anchor=tk.W)
-        self.tree.heading('ask_sum', text='Sum', anchor=tk.W)
+        self.tree_depth.heading('bid_price', text='Price', anchor=tk.W)
+        self.tree_depth.heading('bid_qty', text='Qty', anchor=tk.W)
+        self.tree_depth.heading('bid_sum', text='Sum', anchor=tk.W)
+        self.tree_depth.heading('ask_price', text='Price', anchor=tk.W)
+        self.tree_depth.heading('ask_qty', text='Qty', anchor=tk.W)
+        self.tree_depth.heading('ask_sum', text='Sum', anchor=tk.W)
 
-        self.tree.place(x=0, y=30, width=self.width_root, height=self.height_root-35)
+        self.tree_depth.place(x=0, y=30, width=self.width_root, height=self.height_root-35)
 
-        self.view_tree()
+        self._view_tree()
 
-    def view_tree(self):
-        for i in self.tree.get_children():
-            self.tree.delete(i)
+    def _view_tree(self):
+        for i in self.tree_depth.get_children():
+            self.tree_depth.delete(i)
 
         around_price = self._bot_state.rules[self._bot_state.bot.pair]['around_price']
         around_qty = self._bot_state.rules[self._bot_state.bot.pair]['around_qty']
 
         for i in range(min(len(self._bot_state.depth['bids']), len(self._bot_state.depth['asks']), 20)):
 
-            if len(self._bot_state.depth['bids']) > i and len(self._bot_state.depth['asks']) > i:
+            self.tree_depth.insert('', 'end', 'depth_' + str(i), values=(
+                self.ff(self._bot_state.depth['bids'][i][0], around_price),
+                self.ff(self._bot_state.depth['bids'][i][1], around_qty),
+                self.ff(self._bot_state.depth['bids'][i][0]*self._bot_state.depth['bids'][i][1], around_price),
+                self.ff(self._bot_state.depth['asks'][i][0], around_price),
+                self.ff(self._bot_state.depth['asks'][i][1], around_qty),
+                self.ff(self._bot_state.depth['asks'][i][0]*self._bot_state.depth['asks'][i][1], around_price),
+            ))
 
-                self.tree.insert('', 'end', 'depth_' + str(i), values=(
-                    0.0 if not self._bot_state.depth['bids'][i][0]
-                    else ('{:.' + str(around_price) + 'f}').format(self._bot_state.depth['bids'][i][0]),
-                    0.0 if not self._bot_state.depth['bids'][i][1]
-                    else ('{:.' + str(around_qty) + 'f}').format(self._bot_state.depth['bids'][i][1]),
-                    0.0 if not self._bot_state.depth['bids'][i][0]
-                    else ('{:.' + str(around_price) + 'f}').format(self._bot_state.depth['bids'][i][0] *
-                                                                   self._bot_state.depth['bids'][i][1]),
-                    0.0 if not self._bot_state.depth['asks'][i][0]
-                    else ('{:.' + str(around_price) + 'f}').format(self._bot_state.depth['asks'][i][0]),
-                    0.0 if not self._bot_state.depth['asks'][i][1]
-                    else ('{:.' + str(around_qty) + 'f}').format(self._bot_state.depth['asks'][i][1]),
-                    0.0 if not self._bot_state.depth['asks'][i][0]
-                    else ('{:.' + str(around_price) + 'f}').format(self._bot_state.depth['asks'][i][0] *
-                                                                   self._bot_state.depth['asks'][i][1]),
-                ))
-            else:
-                self.tree.insert('', 'end', 'depth_' + str(i), values=(0.0, 0.0, 0.0, 0.0, 0.0, 0.0))
-
-        self.after(int(self._bot_state.bot.update_time * 1000), self.view_tree)
+        self.after(int(self._bot_state.bot.update_time * 1000), self._view_tree)
 
     def _init_orders_window(self):
-        pass
+        self.display_window = 'orders'
+        self.tool_bar.forget()
+
+        self.tool_bar = tk.Frame(bg='#ffffff', bd=0, width=self.width_root, height=self.height_root-20)
+        self.tool_bar.pack(side=tk.TOP, fill=tk.BOTH)
+
+        tk.Label(self.tool_bar, text='ORDERS', bg='#ffffff', font='Arial 10 bold').place(x=10, y=5)
+
+        ttk.Button(self.tool_bar, text='Cancel', command=self._init_cancel).place(x=self.width_root-80, y=5,
+                                                                                  width=70, height=23)
+        self.tree_orders = ttk.Treeview(self.tool_bar)
+
+        self.tree_orders['columns'] = ('side', 'price', 'filled', 'amount', 'sum')
+        self.tree_orders.column('#0', width=0, minwidth=0, stretch=tk.NO)
+        self.tree_orders.column('side', width=84, minwidth=50)
+        self.tree_orders.column('price', width=84, minwidth=50, stretch=tk.NO)
+        self.tree_orders.column('filled', width=84, minwidth=50, stretch=tk.NO)
+        self.tree_orders.column('amount', width=84, minwidth=50, stretch=tk.NO)
+        self.tree_orders.column('sum', width=84, minwidth=50, stretch=tk.NO)
+
+        self.tree_orders.heading('side', text='Side', anchor=tk.W)
+        self.tree_orders.heading('price', text='Price', anchor=tk.W)
+        self.tree_orders.heading('filled', text='Filled', anchor=tk.W)
+        self.tree_orders.heading('amount', text='Amount', anchor=tk.W)
+        self.tree_orders.heading('sum', text='Sum', anchor=tk.W)
+
+        around_price = self._bot_state.rules[self._bot_state.bot.pair]['around_price']
+        around_qty = self._bot_state.rules[self._bot_state.bot.pair]['around_qty']
+
+        for i in range(len(self._bot_state.orders)):
+            self.tree_orders.insert('', 'end', self._bot_state.orders[i]['id'], text=self._bot_state.orders[i]['id'],
+                                    values=(self._bot_state.orders[i]['side'],
+                                            self.ff(self._bot_state.orders[i]['price'], around_price), self.ff(
+                                        (lambda x: 0.0 if x is None else x)(self._bot_state.orders[i]['filled']),
+                                        around_qty), self.ff(
+                                        (lambda x: 0.0 if x is None else x)(self._bot_state.orders[i]['filled']) + (
+                                            lambda x: 0.0 if x is None else x)(self._bot_state.orders[i]['remaining']),
+                                        around_qty), self.ff(
+                                        self._bot_state.orders[i]['price'] * (lambda x: 0.0 if x is None else x)(
+                                            self._bot_state.orders[i]['amount']), 8)))
+
+        self.tree_orders.place(x=0, y=30, width=self.width_root, height=self.height_root-35)
+
+    def _init_cancel(self):
+        self._bot_state.cancel_order(order_id=self.tree_orders.item(self.tree_orders.focus())['text'])
+
+    @staticmethod
+    def ff(d: float, n: int):
+        return ('{:.%df}' % n).format(d)
 
     def _init_trades_window(self):
-        pass
+        self.display_window = 'trades'
+        self.tool_bar.forget()
+
+        self.tool_bar = tk.Frame(bg='#ffffff', bd=0, width=self.width_root, height=self.height_root-20)
+        self.tool_bar.pack(side=tk.TOP, fill=tk.BOTH)
+
+        tk.Label(self.tool_bar, text='TRADES', bg='#ffffff', font='Arial 10 bold').place(x=10, y=5)
+
+        self.tree_trades = ttk.Treeview(self.tool_bar)
+
+        self.tree_trades['columns'] = ('time', 'side', 'price', 'amount', 'sum')
+        self.tree_trades.column('#0', width=0, minwidth=0, stretch=tk.NO)
+        self.tree_trades.column('time', width=90, minwidth=50, stretch=tk.NO)
+        self.tree_trades.column('side', width=78, minwidth=40, stretch=tk.NO)
+        self.tree_trades.column('price', width=84, minwidth=50, stretch=tk.NO)
+        self.tree_trades.column('amount', width=84, minwidth=50, stretch=tk.NO)
+        self.tree_trades.column('sum', width=84, minwidth=50, stretch=tk.NO)
+
+        self.tree_trades.heading('time', text='Time', anchor=tk.W)
+        self.tree_trades.heading('side', text='Side', anchor=tk.W)
+        self.tree_trades.heading('price', text='Price', anchor=tk.W)
+        self.tree_trades.heading('amount', text='Amount', anchor=tk.W)
+        self.tree_trades.heading('sum', text='Sum', anchor=tk.W)
+
+        around_price = self._bot_state.rules[self._bot_state.bot.pair]['around_price']
+        around_qty = self._bot_state.rules[self._bot_state.bot.pair]['around_qty']
+
+        self._bot_state.get_trades()
+
+        for i in range(min(len(self._bot_state.trades), 20)):
+            self.tree_trades.insert('', 'end', 'trades_' + str(i),
+                                    values=(
+                                    strftime('%m/%d %H:%M', localtime(self._bot_state.trades[i]['timestamp'] / 1000)),
+                                    self._bot_state.trades[i]['side'],
+                                    self.ff(self._bot_state.trades[i]['price'], around_price),
+                                    self.ff((lambda x: 0.0 if x is None else x)(self._bot_state.trades[i]['amount']),
+                                            around_qty),
+                                    self.ff((lambda x: 0.0 if x is None else x)(self._bot_state.trades[i]['cost']),
+                                            around_price)))
+
+        self.tree_trades.place(x=0, y=30, width=self.width_root, height=self.height_root-35)
 
     def _init_terminal_window(self):
         pass

@@ -174,6 +174,19 @@ class BotState:
         else:
             self.orders = list()
 
+    def get_trades(self):
+
+        try:
+            trades = self.api.fetch_my_trades(self.rules[self.bot.pair]['symbol'])
+        except Exception as e:
+            self.log.post('* Get trades error. ' + str(type(e).__name__) + ': ' + str(e))
+            self.log.post('** Ошибка:\n' + traceback.format_exc())
+            trades = list()
+        if trades:
+            self.trades = trades
+        else:
+            self.trades = list()
+
     def check_orders(self):
         if len(self.orders) > 0:
             current_time = time()
