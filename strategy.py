@@ -25,6 +25,9 @@ class Strategy:
     def check(self, last_price: float):
         return self.cur.check(last_price)
 
+    def get_item_names(self):
+        return self.cur.get_item_names()
+
 
 class StrategySniper(DefaultItem):
     """Класс работы стратегии Sniper.

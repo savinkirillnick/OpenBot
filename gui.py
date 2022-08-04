@@ -236,4 +236,58 @@ class MainWindow(tk.Frame):
         pass
 
     def _init_settings_window(self):
+        self.display_window = 'settings'
+        self.tool_bar.forget()
+
+        settings_names = self._bot_state.bot.get_item_names()
+        strategy_names = self._bot_state.strategy.get_item_names()
+        count_settings = len(settings_names) + len(strategy_names)
+
+        full_height = count_settings * 25 + 150
+
+        # Создаю внешний фрейм
+        self.tool_bar = tk.Frame(bg='#ffffff', bd=0, width=self.width_root, height=self.height_root-20)
+        self.tool_bar.pack(side=tk.TOP, expand=tk.YES, fill=tk.BOTH)
+
+        # Создаю холст во внешнем фрейме
+        can = tk.Canvas(self.tool_bar, bd=0)
+        can.config(width=self.width_root, height=self.height_root-20)
+        can.config(scrollregion=(0, 2, 300, full_height))
+
+        # Создаю скроллбар
+        scroll_bar = ttk.Scrollbar(self.tool_bar, orient='vertical', command=can.yview, )
+        can.config(yscrollcommand=scroll_bar.set)
+        scroll_bar.pack(side=tk.RIGHT, fill=tk.Y)
+        can.pack(side=tk.LEFT, expand=tk.YES, fill=tk.BOTH)
+
+        # Создаю внутренний фрейм
+        inner_bar = tk.Frame(can, bd=0, bg='#ffffff', width=self.width_root, height=full_height + 5)
+        can.create_window((0, 0), window=inner_bar, anchor=tk.NW)
+
+        tk.Label(inner_bar, text='TRADES', bg='#ffffff', font='Arial 10 bold').place(x=10, y=5)
+
+        y = 5
+        tk.Label(inner_bar, bg='#ffffff', text='BOT SETTINGS', font='Arial 10 bold').place(x=10, y=y)
+
+        for key in settings_names.keys():
+            y += 25
+            tk.Label(inner_bar, bg='#ffffff', text=settings_names[key]).place(x=10, y=y)
+            exec(f'self.entry_bot_{key} = ttk.Entry(inner_bar)')
+            exec(f'self.entry_bot_{key}.place(x=150, y=y, width=240)')
+            # self.entry_bot = ttk.Entry(inner_bar, key=key)
+            # self.entry_bot.place(x=150, y=y, width=170)
+
+        y += 35
+        tk.Label(inner_bar, bg='#ffffff', text='STRATEGY SETTINGS', font='Arial 10 bold').place(x=10, y=y)
+
+        for key in strategy_names.keys():
+            y += 25
+            tk.Label(inner_bar, bg='#ffffff', text=strategy_names[key]).place(x=10, y=y)
+            exec(f'self.entry_strategy_{key} = ttk.Entry(inner_bar)')
+            exec(f'self.entry_strategy_{key}.place(x=150, y=y, width=240)')
+
+        y += 50
+        ttk.Button(inner_bar, text='Save', command=self.save_settings).place(x=150, y=y, width=120, height=30)
+
+    def save_settings(self):
         pass
