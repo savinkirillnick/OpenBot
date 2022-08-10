@@ -61,6 +61,9 @@ class BotState:
         # сторона ордера на отмену (buy/sell)
         self.queue_side = ''
 
+        # Список бирж
+        self.exchanges = list()
+
         # Последняя цена
         self.last_price = 0.0
 

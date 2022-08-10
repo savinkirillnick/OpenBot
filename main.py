@@ -21,6 +21,7 @@ if __name__ == '__main__':
 
     # Создаем объект состояния бота
     bs = BotState()
+    bs.exchanges = ccxt.exchanges
 
     # Создаем объект API, в зависимости, какая биржа у нас подключена
     api = None

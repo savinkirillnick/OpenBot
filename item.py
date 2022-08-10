@@ -42,8 +42,7 @@ class DefaultItem:
 
     def get_item_names(self):
         """Получение словаря из всех свойств объекта и их названий."""
-        data = {key if not key.startswith('_') else key.replace('_', '', 1): value.replace('_',
-                                                                                           ' ').capitalize() if
+        data = {key if not key.startswith('_') else key.replace('_', '', 1): value.replace('_', ' ').capitalize() if
         not value.startswith(
             '_') else value.replace('_', '', 1).replace('_', ' ').capitalize() for key, value in
                 zip(vars(self).keys(), vars(self).keys())}

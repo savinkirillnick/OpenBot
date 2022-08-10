@@ -272,8 +272,14 @@ class MainWindow(tk.Frame):
         for key in settings_names.keys():
             y += 25
             tk.Label(inner_bar, bg='#ffffff', text=settings_names[key]).place(x=10, y=y)
-            exec(f'self.entry_bot_{key} = ttk.Entry(inner_bar)')
-            exec(f'self.entry_bot_{key}.place(x=150, y=y, width=240)')
+            if key == 'exchange':
+                self.entry_bot_exchange = ttk.Combobox(inner_bar, values=[x.capitalize() for x
+                                                                          in self._bot_state.exchanges])
+                self.entry_bot_exchange.set(u'Binance')
+                self.entry_bot_exchange.place(x=150, y=y, width=240)
+            else:
+                exec(f'self.entry_bot_{key} = ttk.Entry(inner_bar)')
+                exec(f'self.entry_bot_{key}.place(x=150, y=y, width=240)')
             # self.entry_bot = ttk.Entry(inner_bar, key=key)
             # self.entry_bot.place(x=150, y=y, width=170)
 
