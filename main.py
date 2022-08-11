@@ -17,6 +17,21 @@ from state import BotState
 __version__ = 'ver. dev'
 
 
+def _on_key_release(event):
+    ctrl = (event.state & 0x4) != 0
+    if event.keycode == 88 and ctrl and event.keysym.lower() != "x":
+        event.widget.event_generate("<<Cut>>")
+
+    if event.keycode == 86 and ctrl and event.keysym.lower() != "v":
+        event.widget.event_generate("<<Paste>>")
+
+    if event.keycode == 67 and ctrl and event.keysym.lower() != "c":
+        event.widget.event_generate("<<Copy>>")
+
+    if event.keycode == 65 and ctrl and event.keysym.lower() != "a":
+        event.widget.event_generate("<<SelectAll>>")
+
+
 if __name__ == '__main__':
 
     # Создаем объект состояния бота
@@ -68,5 +83,6 @@ if __name__ == '__main__':
     root.title('Open Bot ' + __version__)
     root.geometry(f'{app_width}x{app_height}+{screen_width//2-app_width//2}+{screen_height//2-app_height//2}')
     root.minsize(app_width, app_height)
+    root.bind_all("<Key>", _on_key_release, "+")
     root.resizable(False, False)
     root.mainloop()

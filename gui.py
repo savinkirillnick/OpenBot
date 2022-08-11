@@ -299,7 +299,7 @@ class MainWindow(tk.Frame):
 
     @staticmethod
     def convert(value, value_type):
-        
+
         if value_type is bool:
             return bool(value)
         elif value_type is int:
@@ -324,7 +324,8 @@ class MainWindow(tk.Frame):
             exec(f'self._bot_state.bot.{key} = self.convert(self.entry_bot_{key}.get(), settings_types[\'{key}\'])')
 
         for key in strategy_names.keys():
-            exec(f'self._bot_state.strategy.{key} = self.convert(self.entry_strategy_{key}.get(), strategy_types[\'{key}\'])')
+            exec(f'self._bot_state.strategy.{key} = '
+                 f'self.convert(self.entry_strategy_{key}.get(), strategy_types[\'{key}\'])')
 
         self._bot_state.bot.save()
         self._bot_state.strategy.save()
