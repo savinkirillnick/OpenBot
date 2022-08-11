@@ -295,5 +295,49 @@ class MainWindow(tk.Frame):
         y += 50
         ttk.Button(inner_bar, text='Save', command=self.save_settings).place(x=150, y=y, width=120, height=30)
 
+        self.view_settings()
+
+    @staticmethod
+    def convert(value, value_type):
+        
+        if value_type is bool:
+            return bool(value)
+        elif value_type is int:
+            return int(value)
+        elif value_type is float:
+            return float(value)
+        elif value_type is str:
+            return value
+        elif value_type is list:
+            return value.split(' ')
+        return None
+
     def save_settings(self):
-        pass
+
+        settings_names = self._bot_state.bot.get_item_names()
+        strategy_names = self._bot_state.strategy.get_item_names()
+
+        settings_types = self._bot_state.bot.get_item_types()
+        strategy_types = self._bot_state.strategy.get_item_types()
+
+        for key in settings_names.keys():
+            exec(f'self._bot_state.bot.{key} = self.convert(self.entry_bot_{key}.get(), settings_types[\'{key}\'])')
+
+        for key in strategy_names.keys():
+            exec(f'self._bot_state.strategy.{key} = self.convert(self.entry_strategy_{key}.get(), strategy_types[\'{key}\'])')
+
+        self._bot_state.bot.save()
+        self._bot_state.strategy.save()
+
+    def view_settings(self):
+
+        settings_names = self._bot_state.bot.get_item_names()
+        strategy_names = self._bot_state.strategy.get_item_names()
+
+        for key in settings_names.keys():
+            exec(f'self.entry_bot_{key}.delete(0, tk.END)')
+            exec(f'self.entry_bot_{key}.insert(0, self._bot_state.bot.{key})')
+
+        for key in strategy_names.keys():
+            exec(f'self.entry_strategy_{key}.delete(0, tk.END)')
+            exec(f'self.entry_strategy_{key}.insert(0, self._bot_state.strategy.cur.{key})')

@@ -28,6 +28,9 @@ class Strategy:
     def get_item_names(self):
         return self.cur.get_item_names()
 
+    def get_item_types(self):
+        return self.cur.get_item_types()
+
 
 class StrategySniper(DefaultItem):
     """Класс работы стратегии Sniper.

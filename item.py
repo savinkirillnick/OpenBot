@@ -41,11 +41,22 @@ class DefaultItem:
         self.save()
 
     def get_item_names(self):
-        """Получение словаря из всех свойств объекта и их названий."""
+        """Получение словаря из всех свойств объекта и их названий.
+        функия возвращает словарь типа:
+        {'api_key': 'Api key', 'exchange': 'Exchange', ... }"""
         data = {key if not key.startswith('_') else key.replace('_', '', 1): value.replace('_', ' ').capitalize() if
         not value.startswith(
-            '_') else value.replace('_', '', 1).replace('_', ' ').capitalize() for key, value in
-                zip(vars(self).keys(), vars(self).keys())}
+            '_') else value.replace('_', '', 1).replace('_', ' ').capitalize() for
+                key, value in zip(vars(self).keys(), vars(self).keys())}
+
+        return data
+
+    def get_item_types(self):
+        """Полчение вех типов переменных в виде словаря
+        функия возвращает словарь типа:
+        {'api_key': <class 'str'>, 'exchange': <class 'str'>, ... }"""
+        data = {key if not key.startswith('_') else key.replace('_', '', 1): type(vars(self)[key]) for
+                key in vars(self).keys()}
 
         return data
 
