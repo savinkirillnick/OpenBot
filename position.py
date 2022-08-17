@@ -56,6 +56,7 @@ class Position(DefaultItem):
         price (float) - цена покупки;
         qty (float) - объем покупки.
 
+        Пересчет средней цены позиции и объема
         """
         lot = self.price * self.qty + price * qty
         self.qty += qty
@@ -69,8 +70,11 @@ class Position(DefaultItem):
         price (float) - цена продажи;
         qty (float) - объем продажи.
 
+        Пересчет средней цены позиции и объема
         """
+        lot = self.price * self.qty - price * qty
         self.qty -= qty
+        self.price = lot / self.qty
         if round(self.qty, 8) <= 0:
             self.reset()
 
