@@ -383,3 +383,56 @@ class BotState:
 
     def update_activity(self):
         pass
+
+    def send_order(self, side: str, order_price: float, order_qty: float):
+        # Функция отправки ордера
+
+        if self.api is not None and self.bot.api_key != '' and self.bot.api_secret != '':
+            order = dict()
+            try:
+
+                if side.lower() == 'buy':
+                    order = self.api.create_limit_buy_order(self.rules[self.bot.pair]['symbol'], order_qty, order_price)
+                elif side.lower() == 'sell':
+                    order = self.api.create_limit_sell_order(self.rules[self.bot.pair]['symbol'], order_qty, order_price)
+
+            except Exception as e:
+                self.log.post('* Send order error. ' + str(type(e).__name__) + ': ' + str(e))
+                self.log.post('** Ошибка:\n' + traceback.format_exc())
+                order = dict()
+
+            if order:
+
+                data = dict()
+
+                around_price = self.rules[self.bot.pair]['around_price']
+                around_qty = self.rules[self.bot.pair]['around_qty']
+                currency_base = self.bot.pair.split('_')[0].upper()
+                currency_quote = self.bot.pair.split('_')[1].upper()
+
+                data['pair'] = self.bot.pair
+                data['price'] = order_price
+                data['qty'] = order_qty
+                data['side'] = side
+                data['desc'] = side.upper() + ' ' + str(
+                    self.ff(order_qty, around_qty)) + ' ' + currency_base + ' × ' + str(
+                    self.ff(order_price, around_price)) + ' ' + currency_quote
+
+                self.log.post(data['desc'])
+
+                self.orders.append(
+                    {'id': order['id'], 'pair': self.bot.pair, 'side': side, 'qty': order_qty, 'fill': 0.0,
+                     'price': order_price,
+                     'time': time()})
+
+                if side == 'buy':
+                    self.last_buy_time = time() + self.bot.pause
+                elif side == 'sell':
+                    self.last_sell_time = time() + self.bot.pause
+
+            else:
+
+                if side == 'buy':
+                    self.last_buy_time = time() + 10
+                elif side == 'sell':
+                    self.last_sell_time = time() + 10

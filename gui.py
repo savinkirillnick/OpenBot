@@ -1,8 +1,10 @@
 # Класс графического интерфейса
 
 import tkinter as tk
+import traceback
 from time import strftime, localtime
 from tkinter import ttk
+from logs import Logs
 
 
 # Список разделов программы
@@ -11,7 +13,6 @@ gui_menu = ['main',
             'orders',
             'trades',
             'terminal',
-            'position',
             'settings'
             ]
 
@@ -33,6 +34,8 @@ class MainWindow(tk.Frame):
         self.tool_bar = tk.Frame(bg='#ffffff', bd=0)
         self.tool_bar.pack(side=tk.TOP, fill=tk.BOTH)
 
+        self.log = Logs()
+
         self._init_main_window()
 
     def _init_menu(self):
@@ -52,6 +55,7 @@ class MainWindow(tk.Frame):
         self.start_stop_button.pack(side=tk.LEFT, padx=5)
 
     def _init_main_window(self):
+        # Создаем основное окно программы
 
         self.display_window = 'main'
         self.tool_bar.forget()
@@ -74,6 +78,8 @@ class MainWindow(tk.Frame):
         self._show_logs()
 
     def _show_logs(self, message=''):
+        # Функция показа логов
+
         self.logs_box.configure(state='normal')
         self.logs_box.insert(tk.END, '\n'.join(self._bot_state.log.logs_journal)+'\n' if not message else message+'\n')
         self.logs_box.configure(state='disable')
@@ -84,6 +90,7 @@ class MainWindow(tk.Frame):
         self._show_logs(message)
 
     def _init_depth_window(self):
+        # Функция показа окна стакана
 
         self.display_window = 'depth'
         self.tool_bar.forget()
@@ -116,6 +123,8 @@ class MainWindow(tk.Frame):
         self._view_tree()
 
     def _view_tree(self):
+        # Заполнение и отображение стакана
+
         for i in self.tree_depth.get_children():
             self.tree_depth.delete(i)
 
@@ -136,6 +145,8 @@ class MainWindow(tk.Frame):
         self.after(int(self._bot_state.bot.update_time * 1000), self._view_tree)
 
     def _init_orders_window(self):
+        # Функция показа окна с открытыми ордерами
+
         self.display_window = 'orders'
         self.tool_bar.forget()
 
@@ -180,13 +191,18 @@ class MainWindow(tk.Frame):
         self.tree_orders.place(x=0, y=30, width=self.width_root, height=self.height_root-35)
 
     def _init_cancel(self):
+        # Отмена ордера на кнопку
+
         self._bot_state.cancel_order(order_id=self.tree_orders.item(self.tree_orders.focus())['text'])
 
-    @staticmethod
-    def ff(d: float, n: int):
-        return ('{:.%df}' % n).format(d)
+    def ff(self, d: float, n: int):
+        # Форматирование числа до n-знака
+
+        return self._bot_state.ff(d, n)
 
     def _init_trades_window(self):
+        # Функция показа окна истории совершенных сделок
+
         self.display_window = 'trades'
         self.tool_bar.forget()
 
@@ -230,12 +246,134 @@ class MainWindow(tk.Frame):
         self.tree_trades.place(x=0, y=30, width=self.width_root, height=self.height_root-35)
 
     def _init_terminal_window(self):
-        pass
+        # Функция показа окна ручной торговли
 
-    def _init_position_window(self):
-        pass
+        self.display_window = 'terminal'
+        self.tool_bar.forget()
+
+        self.tool_bar = tk.Frame(bg='#ffffff', bd=0, width=self.width_root, height=self.height_root - 20)
+        self.tool_bar.pack(side=tk.TOP, fill=tk.BOTH)
+
+        y = 5
+        tk.Label(self.tool_bar, bg='#ffffff', text='FUNDS:', font='Arial 10 bold').place(x=10, y=y)
+
+        y += 25
+        self.quote_asset = tk.Label(self.tool_bar, bg='#ffffff', text='Quote')
+        self.quote_asset.place(x=10, y=y)
+        self.base_asset = tk.Label(self.tool_bar, bg='#ffffff', text='Base')
+        self.base_asset.place(x=150, y=y)
+        self.entry_quote = ttk.Entry(self.tool_bar)
+        self.entry_quote.place(x=60, y=y, width=80)
+        self.entry_base = ttk.Entry(self.tool_bar)
+        self.entry_base.place(x=200, y=y, width=80)
+
+        y += 25
+        tk.Label(self.tool_bar, bg='#ffffff', text='BUY').place(x=10, y=y)
+        self.label_buy_num_step = tk.Label(self.tool_bar, bg='#ffffff', text='Step')
+        self.label_buy_num_step.place(x=60, y=y)
+        tk.Label(self.tool_bar, bg='#ffffff', text='SELL').place(x=150, y=y)
+        self.label_sell_num_step = tk.Label(self.tool_bar, bg='#ffffff', text='Step')
+        self.label_sell_num_step.place(x=200, y=y)
+
+        y += 25
+        self.label_buy_price = tk.Label(self.tool_bar, bg='#ffffff', text='Price')
+        self.label_buy_price.place(x=10, y=y)
+        self.label_sell_price = tk.Label(self.tool_bar, bg='#ffffff', text='Price')
+        self.label_sell_price.place(x=150, y=y)
+        self.entry_buy_price = ttk.Entry(self.tool_bar)
+        self.entry_buy_price.insert(0, '0')
+        self.entry_buy_price.place(x=60, y=y, width=80)
+        self.entry_sell_price = ttk.Entry(self.tool_bar)
+        self.entry_sell_price.insert(0, '0')
+        self.entry_sell_price.place(x=200, y=y, width=80)
+
+        y += 25
+        self.label_buy_qty = tk.Label(self.tool_bar, bg='#ffffff', text='Qty')
+        self.label_buy_qty.place(x=10, y=y)
+        self.label_sell_qty = tk.Label(self.tool_bar, bg='#ffffff', text='Qty')
+        self.label_sell_qty.place(x=150, y=y)
+        self.entry_buy_qty = ttk.Entry(self.tool_bar)
+        self.entry_buy_qty.insert(0, '0')
+        self.entry_buy_qty.place(x=60, y=y, width=80)
+        self.entry_sell_qty = ttk.Entry(self.tool_bar)
+        self.entry_sell_qty.insert(0, '0')
+        self.entry_sell_qty.place(x=200, y=y, width=80)
+
+        y += 25
+        s = ttk.Style()
+        s.configure('Horizontal.TScale', background='#ffffff')
+        self.buy_scale_qty = tk.IntVar()
+        self.sell_scale_qty = tk.IntVar()
+        self.label_scale_buy = tk.Label(self.tool_bar, bg='#ffffff', text=0, textvariable=self.buy_scale_qty)
+        self.label_scale_buy.place(x=10, y=y)
+        self.label_scale_sell = tk.Label(self.tool_bar, bg='#ffffff', text=0, textvariable=self.sell_scale_qty)
+        self.label_scale_sell.place(x=150, y=y)
+        scale_buy = ttk.Scale(self.tool_bar, style='Horizontal.TScale', from_=0, to=100, command=self.on_buy_scale)
+        scale_buy.place(x=60, y=y, width=80)
+        scale_sell = ttk.Scale(self.tool_bar, style='Horizontal.TScale', from_=0, to=100, command=self.on_sell_scale)
+        scale_sell.place(x=200, y=y, width=80)
+
+        y += 30
+        btn_buy = ttk.Button(self.tool_bar, text='BUY', command=self.hand_buy)
+        btn_buy.place(x=10, y=y, width=130, height=25)
+        btn_sell = ttk.Button(self.tool_bar, text='SELL', command=self.hand_sell)
+        btn_sell.place(x=150, y=y, width=130, height=25)
+
+    def on_buy_scale(self, val):
+        v = int(float(val))
+        self.buy_scale_qty.set(str(v) + '%')
+        try:
+            price = float(self.entry_buy_price.get())
+            if price != '':
+                qty = (float(self.entry_quote.get()) / price) * (v / 100)
+
+                around_qty = self._bot_state.rules[self._bot_state.bot.pair]['around_qty']
+                currency_quote = self._bot_state.bot.pair.split('_')[1].upper()
+
+                if round(qty, around_qty) * price > self._bot_state.balances[currency_quote]['free']:
+                    while round(qty, around_qty) * price > self._bot_state.balances[currency_quote]['free']:
+                        qty -= 0.1 ** around_qty
+
+                self.entry_buy_qty.delete(0, tk.END)
+                self.entry_buy_qty.insert(0, self.ff(qty, around_qty))
+        except Exception as e:
+            self.log.post('* No buy scale error. ' + str(type(e).__name__) + ': ' + str(e))
+            self.log.post('** Ошибка:\n' + traceback.format_exc())
+
+    def on_sell_scale(self, val):
+        v = int(float(val))
+        self.sell_scale_qty.set(str(v) + '%')
+        try:
+            qty = float(self.entry_base.get()) * (v / 100)
+
+            around_qty = self._bot_state.rules[self._bot_state.bot.pair]['around_qty']
+            currency_base = self._bot_state.bot.pair.split('_')[0].upper()
+
+            if round(qty, around_qty) > self._bot_state.balances[currency_base]['free']:
+                while round(qty, around_qty) > self._bot_state.balances[currency_base]['free']:
+                    qty -= 0.1 ** around_qty
+
+            self.entry_sell_qty.delete(0, tk.END)
+            self.entry_sell_qty.insert(0, self.ff(qty, around_qty))
+        except Exception as e:
+            self.log.post('* No sell scale error. ' + str(type(e).__name__) + ': ' + str(e))
+            self.log.post('** Ошибка:\n' + traceback.format_exc())
+
+    def hand_buy(self):
+        order_price = float(self.entry_buy_price.get())
+        order_qty = float(self.entry_buy_qty.get())
+        if self._bot_state.check_trade_rules(order_price, order_qty):
+            self._bot_state.send_order('buy', order_price, order_qty)
+
+    def hand_sell(self):
+        order_price = float(self.entry_buy_price.get())
+        order_qty = float(self.entry_buy_qty.get())
+        if self._bot_state.check_trade_rules(order_price, order_qty):
+            self._bot_state.send_order('sell', order_price, order_qty)
 
     def _init_settings_window(self):
+        # Функция показа окна настроек
+
         self.display_window = 'settings'
         self.tool_bar.forget()
 
