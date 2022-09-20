@@ -381,26 +381,26 @@ class MainWindow(tk.Frame):
         strategy_names = self._bc.strategy.get_item_names()
         count_settings = len(settings_names) + len(strategy_names)
 
-        full_height = count_settings * 25 + 150
+        self.full_height = count_settings * 25 + 150
 
         # Создаю внешний фрейм
         self.tool_bar = tk.Frame(bg='#ffffff', bd=0, width=self.width_root, height=self.height_root-20)
         self.tool_bar.pack(side=tk.TOP, expand=tk.YES, fill=tk.BOTH)
 
         # Создаю холст во внешнем фрейме
-        can = tk.Canvas(self.tool_bar, bd=0)
-        can.config(width=self.width_root, height=self.height_root-20)
-        can.config(scrollregion=(0, 2, 300, full_height))
+        self.can = tk.Canvas(self.tool_bar, bd=0)
+        self.can.config(width=self.width_root, height=self.height_root-20)
+        self.can.config(scrollregion=(0, 2, 300, self.full_height))
 
         # Создаю скроллбар
-        scroll_bar = ttk.Scrollbar(self.tool_bar, orient='vertical', command=can.yview, )
-        can.config(yscrollcommand=scroll_bar.set)
+        scroll_bar = ttk.Scrollbar(self.tool_bar, orient='vertical', command=self.can.yview, )
+        self.can.config(yscrollcommand=scroll_bar.set)
         scroll_bar.pack(side=tk.RIGHT, fill=tk.Y)
-        can.pack(side=tk.LEFT, expand=tk.YES, fill=tk.BOTH)
+        self.can.pack(side=tk.LEFT, expand=tk.YES, fill=tk.BOTH)
 
         # Создаю внутренний фрейм
-        inner_bar = tk.Frame(can, bd=0, bg='#ffffff', width=self.width_root, height=full_height + 5)
-        can.create_window((0, 0), window=inner_bar, anchor=tk.NW)
+        inner_bar = tk.Frame(self.can, bd=0, bg='#ffffff', width=self.width_root, height=self.full_height + 5)
+        self.can.create_window((0, 0), window=inner_bar, anchor=tk.NW)
 
         tk.Label(inner_bar, text='TRADES', bg='#ffffff', font='Arial 10 bold').place(x=10, y=5)
 
@@ -411,15 +411,12 @@ class MainWindow(tk.Frame):
             y += 25
             tk.Label(inner_bar, bg='#ffffff', text=settings_names[key]).place(x=10, y=y)
             if key == 'exchange':
-                self.entry_bot_exchange = ttk.Combobox(inner_bar, values=[x.capitalize() for x
-                                                                          in self._bc.exchanges])
-                self.entry_bot_exchange.set(u'Binance')
+                self.entry_bot_exchange = ttk.Combobox(inner_bar, values=[self._bc.exchanges])
+                self.entry_bot_exchange.set(u'binance')
                 self.entry_bot_exchange.place(x=150, y=y, width=240)
             else:
                 exec(f'self.entry_bot_{key} = ttk.Entry(inner_bar)')
                 exec(f'self.entry_bot_{key}.place(x=150, y=y, width=240)')
-            # self.entry_bot = ttk.Entry(inner_bar, key=key)
-            # self.entry_bot.place(x=150, y=y, width=170)
 
         y += 35
         tk.Label(inner_bar, bg='#ffffff', text='STRATEGY SETTINGS', font='Arial 10 bold').place(x=10, y=y)
@@ -434,6 +431,20 @@ class MainWindow(tk.Frame):
         ttk.Button(inner_bar, text='Save', command=self.save_settings).place(x=150, y=y, width=120, height=30)
 
         self.view_settings()
+
+        # Контроль колесика мыши
+        # для Windows
+        self._root.bind("<MouseWheel>", self.mouse_wheel)
+        # для Linux
+        self._root.bind("<Button-4>", self.mouse_wheel)
+        self._root.bind("<Button-5>", self.mouse_wheel)
+
+    def mouse_wheel(self, event):
+        # воспроизведение события колесика мыши Linux or Windows
+        if event.num == 5 or event.delta == -120:
+            self.can.yview_scroll(1, "units")
+        if event.num == 4 or event.delta == 120:
+            self.can.yview_scroll(-1, "units")
 
     @staticmethod
     def convert(value, value_type):
