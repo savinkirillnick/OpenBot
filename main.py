@@ -11,7 +11,7 @@ import tkinter as tk
 from gui import MainWindow
 from threading import Thread
 import ccxt
-from state import BotState
+from controller import BotController
 
 
 __version__ = 'ver. dev'
@@ -35,44 +35,44 @@ def _on_key_release(event):
 if __name__ == '__main__':
 
     # Создаем объект состояния бота
-    bs = BotState()
-    bs.exchanges = ccxt.exchanges
+    bc = BotController()
+    bc.exchanges = ccxt.exchanges
 
     # Создаем объект API, в зависимости, какая биржа у нас подключена
     api = None
     try:
         # Получаем список наобходимых данных
-        required = eval(f'ccxt.{bs.bot.exchange}.requiredCredentials')
+        required = eval(f'ccxt.{bc.bot.exchange}.requiredCredentials')
 
         # Удаляем apiKey и secret, оставляем дополнительные параметры
         del required['apiKey']
         del required['secret']
 
         # Формируем словарь аргументов
-        args = {'apiKey': bs.bot.api_key, 'secret': bs.bot.api_secret}
-        args.update({key: bs.bot.api_optional for key in required})
+        args = {'apiKey': bc.bot.api_key, 'secret': bc.bot.api_secret}
+        args.update({key: bc.bot.api_optional for key in required})
 
         # запускаем инициализацию api
-        api = eval(f'ccxt.{bs.bot.exchange}({args})')
+        api = eval(f'ccxt.{bc.bot.exchange}({args})')
     except Exception as e:
         print(e.args)
         quit()
 
     # Если апи инициализировалось, то анациализируем настройки биржи
     if api is not None:
-        bs.api = api
-        bs.init_api()
+        bc.api = api
+        bc.init_api()
 
     # Запускаем потоки и садим функции обновления информации на каждый поток
-    Thread(target=bs.update_prices, daemon=True).start()
-    Thread(target=bs.update_strategies, daemon=True).start()
-    Thread(target=bs.update_order, daemon=True).start()
-    Thread(target=bs.update_depth, daemon=True).start()
-    Thread(target=bs.update_activity, daemon=True).start()
+    Thread(target=bc.update_prices, daemon=True).start()
+    Thread(target=bc.update_strategies, daemon=True).start()
+    Thread(target=bc.update_order, daemon=True).start()
+    Thread(target=bc.update_depth, daemon=True).start()
+    Thread(target=bc.update_activity, daemon=True).start()
 
     # Создаем корневой объект ткинтер
     root = tk.Tk()
-    app = MainWindow(root, bs)
+    app = MainWindow(root, bc)
 
     # Вычисляем расширение экрана пользователя и задаем размеры окна программы
     screen_width = root.winfo_screenwidth()

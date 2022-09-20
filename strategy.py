@@ -30,7 +30,7 @@ class Strategy:
 
     def get_item_types(self):
         return self.cur.get_item_types()
-    
+
     def save(self):
         return self.cur.save()
 

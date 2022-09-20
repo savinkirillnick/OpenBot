@@ -19,11 +19,11 @@ gui_menu = ['main',
 
 class MainWindow(tk.Frame):
 
-    def __init__(self, root, bot_state):
+    def __init__(self, root, bot_controller):
         super().__init__(root)
 
         self._root = root
-        self._bot_state = bot_state
+        self._bc = bot_controller
         self.display_window = 'main'
 
         self.width_root = 420
@@ -81,12 +81,12 @@ class MainWindow(tk.Frame):
         # Функция показа логов
 
         self.logs_box.configure(state='normal')
-        self.logs_box.insert(tk.END, '\n'.join(self._bot_state.log.logs_journal)+'\n' if not message else message+'\n')
+        self.logs_box.insert(tk.END, '\n'.join(self._bc.log.logs_journal)+'\n' if not message else message+'\n')
         self.logs_box.configure(state='disable')
         self.logs_box.yview_moveto(1)
 
     def insert_logs(self, message):
-        self._bot_state.log.post(message)
+        self._bc.log.post(message)
         self._show_logs(message)
 
     def _init_depth_window(self):
@@ -128,21 +128,21 @@ class MainWindow(tk.Frame):
         for i in self.tree_depth.get_children():
             self.tree_depth.delete(i)
 
-        around_price = self._bot_state.rules[self._bot_state.bot.pair]['around_price']
-        around_qty = self._bot_state.rules[self._bot_state.bot.pair]['around_qty']
+        around_price = self._bc.rules[self._bc.bot.pair]['around_price']
+        around_qty = self._bc.rules[self._bc.bot.pair]['around_qty']
 
-        for i in range(min(len(self._bot_state.depth['bids']), len(self._bot_state.depth['asks']), 20)):
+        for i in range(min(len(self._bc.depth['bids']), len(self._bc.depth['asks']), 20)):
 
             self.tree_depth.insert('', 'end', 'depth_' + str(i), values=(
-                self.ff(self._bot_state.depth['bids'][i][0], around_price),
-                self.ff(self._bot_state.depth['bids'][i][1], around_qty),
-                self.ff(self._bot_state.depth['bids'][i][0]*self._bot_state.depth['bids'][i][1], around_price),
-                self.ff(self._bot_state.depth['asks'][i][0], around_price),
-                self.ff(self._bot_state.depth['asks'][i][1], around_qty),
-                self.ff(self._bot_state.depth['asks'][i][0]*self._bot_state.depth['asks'][i][1], around_price),
+                self.ff(self._bc.depth['bids'][i][0], around_price),
+                self.ff(self._bc.depth['bids'][i][1], around_qty),
+                self.ff(self._bc.depth['bids'][i][0]*self._bc.depth['bids'][i][1], around_price),
+                self.ff(self._bc.depth['asks'][i][0], around_price),
+                self.ff(self._bc.depth['asks'][i][1], around_qty),
+                self.ff(self._bc.depth['asks'][i][0]*self._bc.depth['asks'][i][1], around_price),
             ))
 
-        self.after(int(self._bot_state.bot.update_time * 1000), self._view_tree)
+        self.after(int(self._bc.bot.update_time * 1000), self._view_tree)
 
     def _init_orders_window(self):
         # Функция показа окна с открытыми ордерами
@@ -173,32 +173,32 @@ class MainWindow(tk.Frame):
         self.tree_orders.heading('amount', text='Amount', anchor=tk.W)
         self.tree_orders.heading('sum', text='Sum', anchor=tk.W)
 
-        around_price = self._bot_state.rules[self._bot_state.bot.pair]['around_price']
-        around_qty = self._bot_state.rules[self._bot_state.bot.pair]['around_qty']
+        around_price = self._bc.rules[self._bc.bot.pair]['around_price']
+        around_qty = self._bc.rules[self._bc.bot.pair]['around_qty']
 
-        for i in range(len(self._bot_state.orders)):
-            self.tree_orders.insert('', 'end', self._bot_state.orders[i]['id'], text=self._bot_state.orders[i]['id'],
-                                    values=(self._bot_state.orders[i]['side'],
-                                            self.ff(self._bot_state.orders[i]['price'], around_price), self.ff(
-                                        (lambda x: 0.0 if x is None else x)(self._bot_state.orders[i]['filled']),
+        for i in range(len(self._bc.orders)):
+            self.tree_orders.insert('', 'end', self._bc.orders[i]['id'], text=self._bc.orders[i]['id'],
+                                    values=(self._bc.orders[i]['side'],
+                                            self.ff(self._bc.orders[i]['price'], around_price), self.ff(
+                                        (lambda x: 0.0 if x is None else x)(self._bc.orders[i]['filled']),
                                         around_qty), self.ff(
-                                        (lambda x: 0.0 if x is None else x)(self._bot_state.orders[i]['filled']) + (
-                                            lambda x: 0.0 if x is None else x)(self._bot_state.orders[i]['remaining']),
+                                        (lambda x: 0.0 if x is None else x)(self._bc.orders[i]['filled']) + (
+                                            lambda x: 0.0 if x is None else x)(self._bc.orders[i]['remaining']),
                                         around_qty), self.ff(
-                                        self._bot_state.orders[i]['price'] * (lambda x: 0.0 if x is None else x)(
-                                            self._bot_state.orders[i]['amount']), 8)))
+                                        self._bc.orders[i]['price'] * (lambda x: 0.0 if x is None else x)(
+                                            self._bc.orders[i]['amount']), 8)))
 
         self.tree_orders.place(x=0, y=30, width=self.width_root, height=self.height_root-35)
 
     def _init_cancel(self):
         # Отмена ордера на кнопку
 
-        self._bot_state.cancel_order(order_id=self.tree_orders.item(self.tree_orders.focus())['text'])
+        self._bc.cancel_order(order_id=self.tree_orders.item(self.tree_orders.focus())['text'])
 
     def ff(self, d: float, n: int):
         # Форматирование числа до n-знака
 
-        return self._bot_state.ff(d, n)
+        return self._bc.ff(d, n)
 
     def _init_trades_window(self):
         # Функция показа окна истории совершенных сделок
@@ -227,20 +227,20 @@ class MainWindow(tk.Frame):
         self.tree_trades.heading('amount', text='Amount', anchor=tk.W)
         self.tree_trades.heading('sum', text='Sum', anchor=tk.W)
 
-        around_price = self._bot_state.rules[self._bot_state.bot.pair]['around_price']
-        around_qty = self._bot_state.rules[self._bot_state.bot.pair]['around_qty']
+        around_price = self._bc.rules[self._bc.bot.pair]['around_price']
+        around_qty = self._bc.rules[self._bc.bot.pair]['around_qty']
 
-        self._bot_state.get_trades()
+        self._bc.get_trades()
 
-        for i in range(min(len(self._bot_state.trades), 20)):
+        for i in range(min(len(self._bc.trades), 20)):
             self.tree_trades.insert('', 'end', 'trades_' + str(i),
                                     values=(
-                                    strftime('%m/%d %H:%M', localtime(self._bot_state.trades[i]['timestamp'] / 1000)),
-                                    self._bot_state.trades[i]['side'],
-                                    self.ff(self._bot_state.trades[i]['price'], around_price),
-                                    self.ff((lambda x: 0.0 if x is None else x)(self._bot_state.trades[i]['amount']),
+                                    strftime('%m/%d %H:%M', localtime(self._bc.trades[i]['timestamp'] / 1000)),
+                                    self._bc.trades[i]['side'],
+                                    self.ff(self._bc.trades[i]['price'], around_price),
+                                    self.ff((lambda x: 0.0 if x is None else x)(self._bc.trades[i]['amount']),
                                             around_qty),
-                                    self.ff((lambda x: 0.0 if x is None else x)(self._bot_state.trades[i]['cost']),
+                                    self.ff((lambda x: 0.0 if x is None else x)(self._bc.trades[i]['cost']),
                                             around_price)))
 
         self.tree_trades.place(x=0, y=30, width=self.width_root, height=self.height_root-35)
@@ -261,43 +261,43 @@ class MainWindow(tk.Frame):
         self.quote_asset = tk.Label(self.tool_bar, bg='#ffffff', text='Quote')
         self.quote_asset.place(x=10, y=y)
         self.base_asset = tk.Label(self.tool_bar, bg='#ffffff', text='Base')
-        self.base_asset.place(x=150, y=y)
+        self.base_asset.place(x=220, y=y)
         self.entry_quote = ttk.Entry(self.tool_bar)
-        self.entry_quote.place(x=60, y=y, width=80)
+        self.entry_quote.place(x=60, y=y, width=140)
         self.entry_base = ttk.Entry(self.tool_bar)
-        self.entry_base.place(x=200, y=y, width=80)
+        self.entry_base.place(x=270, y=y, width=140)
 
         y += 25
         tk.Label(self.tool_bar, bg='#ffffff', text='BUY').place(x=10, y=y)
         self.label_buy_num_step = tk.Label(self.tool_bar, bg='#ffffff', text='Step')
         self.label_buy_num_step.place(x=60, y=y)
-        tk.Label(self.tool_bar, bg='#ffffff', text='SELL').place(x=150, y=y)
+        tk.Label(self.tool_bar, bg='#ffffff', text='SELL').place(x=220, y=y)
         self.label_sell_num_step = tk.Label(self.tool_bar, bg='#ffffff', text='Step')
-        self.label_sell_num_step.place(x=200, y=y)
+        self.label_sell_num_step.place(x=270, y=y)
 
         y += 25
         self.label_buy_price = tk.Label(self.tool_bar, bg='#ffffff', text='Price')
         self.label_buy_price.place(x=10, y=y)
         self.label_sell_price = tk.Label(self.tool_bar, bg='#ffffff', text='Price')
-        self.label_sell_price.place(x=150, y=y)
+        self.label_sell_price.place(x=220, y=y)
         self.entry_buy_price = ttk.Entry(self.tool_bar)
         self.entry_buy_price.insert(0, '0')
-        self.entry_buy_price.place(x=60, y=y, width=80)
+        self.entry_buy_price.place(x=60, y=y, width=140)
         self.entry_sell_price = ttk.Entry(self.tool_bar)
         self.entry_sell_price.insert(0, '0')
-        self.entry_sell_price.place(x=200, y=y, width=80)
+        self.entry_sell_price.place(x=270, y=y, width=140)
 
         y += 25
         self.label_buy_qty = tk.Label(self.tool_bar, bg='#ffffff', text='Qty')
         self.label_buy_qty.place(x=10, y=y)
         self.label_sell_qty = tk.Label(self.tool_bar, bg='#ffffff', text='Qty')
-        self.label_sell_qty.place(x=150, y=y)
+        self.label_sell_qty.place(x=220, y=y)
         self.entry_buy_qty = ttk.Entry(self.tool_bar)
         self.entry_buy_qty.insert(0, '0')
-        self.entry_buy_qty.place(x=60, y=y, width=80)
+        self.entry_buy_qty.place(x=60, y=y, width=140)
         self.entry_sell_qty = ttk.Entry(self.tool_bar)
         self.entry_sell_qty.insert(0, '0')
-        self.entry_sell_qty.place(x=200, y=y, width=80)
+        self.entry_sell_qty.place(x=270, y=y, width=140)
 
         y += 25
         s = ttk.Style()
@@ -307,17 +307,17 @@ class MainWindow(tk.Frame):
         self.label_scale_buy = tk.Label(self.tool_bar, bg='#ffffff', text=0, textvariable=self.buy_scale_qty)
         self.label_scale_buy.place(x=10, y=y)
         self.label_scale_sell = tk.Label(self.tool_bar, bg='#ffffff', text=0, textvariable=self.sell_scale_qty)
-        self.label_scale_sell.place(x=150, y=y)
+        self.label_scale_sell.place(x=220, y=y)
         scale_buy = ttk.Scale(self.tool_bar, style='Horizontal.TScale', from_=0, to=100, command=self.on_buy_scale)
-        scale_buy.place(x=60, y=y, width=80)
+        scale_buy.place(x=60, y=y, width=140)
         scale_sell = ttk.Scale(self.tool_bar, style='Horizontal.TScale', from_=0, to=100, command=self.on_sell_scale)
-        scale_sell.place(x=200, y=y, width=80)
+        scale_sell.place(x=270, y=y, width=140)
 
         y += 30
         btn_buy = ttk.Button(self.tool_bar, text='BUY', command=self.hand_buy)
-        btn_buy.place(x=10, y=y, width=130, height=25)
+        btn_buy.place(x=10, y=y, width=190, height=25)
         btn_sell = ttk.Button(self.tool_bar, text='SELL', command=self.hand_sell)
-        btn_sell.place(x=150, y=y, width=130, height=25)
+        btn_sell.place(x=220, y=y, width=190, height=25)
 
     def on_buy_scale(self, val):
         v = int(float(val))
@@ -327,11 +327,11 @@ class MainWindow(tk.Frame):
             if price != '':
                 qty = (float(self.entry_quote.get()) / price) * (v / 100)
 
-                around_qty = self._bot_state.rules[self._bot_state.bot.pair]['around_qty']
-                currency_quote = self._bot_state.bot.pair.split('_')[1].upper()
+                around_qty = self._bc.rules[self._bc.bot.pair]['around_qty']
+                currency_quote = self._bc.bot.pair.split('_')[1].upper()
 
-                if round(qty, around_qty) * price > self._bot_state.balances[currency_quote]['free']:
-                    while round(qty, around_qty) * price > self._bot_state.balances[currency_quote]['free']:
+                if round(qty, around_qty) * price > self._bc.balances[currency_quote]['free']:
+                    while round(qty, around_qty) * price > self._bc.balances[currency_quote]['free']:
                         qty -= 0.1 ** around_qty
 
                 self.entry_buy_qty.delete(0, tk.END)
@@ -346,11 +346,11 @@ class MainWindow(tk.Frame):
         try:
             qty = float(self.entry_base.get()) * (v / 100)
 
-            around_qty = self._bot_state.rules[self._bot_state.bot.pair]['around_qty']
-            currency_base = self._bot_state.bot.pair.split('_')[0].upper()
+            around_qty = self._bc.rules[self._bc.bot.pair]['around_qty']
+            currency_base = self._bc.bot.pair.split('_')[0].upper()
 
-            if round(qty, around_qty) > self._bot_state.balances[currency_base]['free']:
-                while round(qty, around_qty) > self._bot_state.balances[currency_base]['free']:
+            if round(qty, around_qty) > self._bc.balances[currency_base]['free']:
+                while round(qty, around_qty) > self._bc.balances[currency_base]['free']:
                     qty -= 0.1 ** around_qty
 
             self.entry_sell_qty.delete(0, tk.END)
@@ -362,14 +362,14 @@ class MainWindow(tk.Frame):
     def hand_buy(self):
         order_price = float(self.entry_buy_price.get())
         order_qty = float(self.entry_buy_qty.get())
-        if self._bot_state.check_trade_rules(order_price, order_qty):
-            self._bot_state.send_order('buy', order_price, order_qty)
+        if self._bc.check_trade_rules(order_price, order_qty):
+            self._bc.send_order('buy', order_price, order_qty)
 
     def hand_sell(self):
         order_price = float(self.entry_buy_price.get())
         order_qty = float(self.entry_buy_qty.get())
-        if self._bot_state.check_trade_rules(order_price, order_qty):
-            self._bot_state.send_order('sell', order_price, order_qty)
+        if self._bc.check_trade_rules(order_price, order_qty):
+            self._bc.send_order('sell', order_price, order_qty)
 
     def _init_settings_window(self):
         # Функция показа окна настроек
@@ -377,8 +377,8 @@ class MainWindow(tk.Frame):
         self.display_window = 'settings'
         self.tool_bar.forget()
 
-        settings_names = self._bot_state.bot.get_item_names()
-        strategy_names = self._bot_state.strategy.get_item_names()
+        settings_names = self._bc.bot.get_item_names()
+        strategy_names = self._bc.strategy.get_item_names()
         count_settings = len(settings_names) + len(strategy_names)
 
         full_height = count_settings * 25 + 150
@@ -412,7 +412,7 @@ class MainWindow(tk.Frame):
             tk.Label(inner_bar, bg='#ffffff', text=settings_names[key]).place(x=10, y=y)
             if key == 'exchange':
                 self.entry_bot_exchange = ttk.Combobox(inner_bar, values=[x.capitalize() for x
-                                                                          in self._bot_state.exchanges])
+                                                                          in self._bc.exchanges])
                 self.entry_bot_exchange.set(u'Binance')
                 self.entry_bot_exchange.place(x=150, y=y, width=240)
             else:
@@ -452,31 +452,31 @@ class MainWindow(tk.Frame):
 
     def save_settings(self):
 
-        settings_names = self._bot_state.bot.get_item_names()
-        strategy_names = self._bot_state.strategy.get_item_names()
+        settings_names = self._bc.bot.get_item_names()
+        strategy_names = self._bc.strategy.get_item_names()
 
-        settings_types = self._bot_state.bot.get_item_types()
-        strategy_types = self._bot_state.strategy.get_item_types()
+        settings_types = self._bc.bot.get_item_types()
+        strategy_types = self._bc.strategy.get_item_types()
 
         for key in settings_names.keys():
-            exec(f'self._bot_state.bot.{key} = self.convert(self.entry_bot_{key}.get(), settings_types[\'{key}\'])')
+            exec(f'self._bc.bot.{key} = self.convert(self.entry_bot_{key}.get(), settings_types[\'{key}\'])')
 
         for key in strategy_names.keys():
-            exec(f'self._bot_state.strategy.{key} = '
+            exec(f'self._bc.strategy.{key} = '
                  f'self.convert(self.entry_strategy_{key}.get(), strategy_types[\'{key}\'])')
 
-        self._bot_state.bot.save()
-        self._bot_state.strategy.save()
+        self._bc.bot.save()
+        self._bc.strategy.save()
 
     def view_settings(self):
 
-        settings_names = self._bot_state.bot.get_item_names()
-        strategy_names = self._bot_state.strategy.get_item_names()
+        settings_names = self._bc.bot.get_item_names()
+        strategy_names = self._bc.strategy.get_item_names()
 
         for key in settings_names.keys():
             exec(f'self.entry_bot_{key}.delete(0, tk.END)')
-            exec(f'self.entry_bot_{key}.insert(0, self._bot_state.bot.{key})')
+            exec(f'self.entry_bot_{key}.insert(0, self._bc.bot.{key})')
 
         for key in strategy_names.keys():
             exec(f'self.entry_strategy_{key}.delete(0, tk.END)')
-            exec(f'self.entry_strategy_{key}.insert(0, self._bot_state.strategy.cur.{key})')
+            exec(f'self.entry_strategy_{key}.insert(0, self._bc.strategy.cur.{key})')
